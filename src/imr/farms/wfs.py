@@ -45,7 +45,7 @@ def writable_location():
 def download_wfs_layer(layer, url, outfile):
     import subprocess
     import logging
-    logging.getLogger(__name__).info(f'Downloading from {url}')
+    logging.getLogger(__name__).info(f'Downloading {layer} from {url}')
     cmd = f'ogr2ogr -f netCDF {outfile} WFS:"{url}" {layer}'
     subprocess.run(cmd)
 
@@ -72,3 +72,12 @@ def locations():
     fname = resource('layer_262', 'fiskdir')
     dset = xr.open_dataset(fname)
     return dset.assign_coords(record=dset.loknr.values)
+
+
+def areas():
+    import xarray as xr
+    fname = resource('layer_203', 'fiskdir')
+    dset = xr.open_dataset(fname)
+    loknr = [int(n.decode('utf8').split(' ')[0]) for n in dset.lokalitet.values]
+    dset = dset.assign(loknr=xr.Variable('record', loknr))
+    return dset.assign_coords(record=loknr)

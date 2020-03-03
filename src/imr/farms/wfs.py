@@ -1,7 +1,7 @@
 from osgeo import ogr, gdal
 
 
-URL = 'https://ogc.fiskeridir.no/wfs.ashx'
+FISKDIR_URL = 'https://ogc.fiskeridir.no/wfs.ashx'
 
 
 def get_wfs(url):
@@ -45,5 +45,3 @@ def download_wfs_layer(layer, url, outfile):
     import logging
     logging.getLogger(__name__).info(f'Downloading from {url}')
     subprocess.run(['ogr2ogr', '-f netCDF', outfile, f'WFS:"{url}"', layer])
-
-

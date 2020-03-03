@@ -3,8 +3,8 @@ python:
 - "3.6"
 
 before_install:
-  sudo add-apt-repository -y ppa:ubuntugis/ppa
-  sudo apt-get install gdal-bin
+  - sudo add-apt-repository -y ppa:ubuntugis/ppa
+  - sudo apt-get install gdal-bin
 #  sudo apt-get install python3-gdal
 #  sudo apt-get install python3-numpy
 

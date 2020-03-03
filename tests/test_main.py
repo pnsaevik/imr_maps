@@ -1,2 +1,5 @@
+import imr.farms
+
+
 def test_dummy():
-    pass
+    imr.farms.main()

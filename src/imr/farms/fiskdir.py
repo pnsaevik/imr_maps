@@ -38,3 +38,12 @@ def writable_location():
     writable_dir_std = os.path.join(os.path.expanduser('~'), '.local', 'share')
     writable_dir = os.environ.get("XDG_DATA_HOME", writable_dir_std)
     return os.path.join(writable_dir, 'imr_farms')
+
+
+def download_wfs_layer(layer, url, outfile):
+    import subprocess
+    import logging
+    logging.getLogger(__name__).info(f'Downloading from {url}')
+    subprocess.run(['ogr2ogr', '-f netCDF', outfile, f'WFS:"{url}"', layer])
+
+

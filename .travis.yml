@@ -16,3 +16,6 @@ install:
   - conda activate test-environment
   - conda install -y GDAL
   - pip install .
+
+script:
+  - pytest

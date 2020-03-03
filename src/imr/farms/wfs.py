@@ -65,3 +65,10 @@ def resource(layer, server, recompute=False):
         raise IOError(f'Unable to download resource {layer} from {server}')
 
     return outfile
+
+
+def locations():
+    import xarray as xr
+    fname = resource('layer_262', 'fiskdir')
+    dset = xr.open_dataset(fname)
+    return dset.assign_coords(record=dset.loknr.values)

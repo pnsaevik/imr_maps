@@ -25,5 +25,18 @@ def test_writable_location_returns_string():
 
 def test_resource_returns_existing_file():
     import os
-    fname = wfs.resource('layer_262', 'fiskdir', recompute=True)
+    fname = wfs.resource('layer_262', 'fiskdir', recompute=False)
     assert os.path.isfile(fname)
+
+
+class Test_locations:
+    @pytest.fixture(scope='class')
+    def locations(self):
+        with wfs.locations() as dset:
+            yield dset
+
+    def test_correct_name_and_location(self, locations):
+        a = locations.sel(record=23015)
+        assert a.navn.values.item().decode('utf8') == 'FLØDEVIGEN'
+        assert a.lat.values.item() == 58.424515
+        assert a.lon.values.item() == 8.756882

@@ -3,7 +3,9 @@ python:
 - "3.6"
 
 install:
-  - pip install pytest # -r requirements.txt
+  - pwd
+  - ls
+  - pip install -e ./setup.py # -r requirements.txt
 
 script:
   - pytest

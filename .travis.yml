@@ -14,5 +14,5 @@ before_install:
 install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
-  - conda install GDAL
+  - conda install -y GDAL
   - pip install .

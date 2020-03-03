@@ -2,4 +2,4 @@ import imr.farms
 
 
 def test_dummy():
-    imr.farms.main()
+    assert imr.farms.main() == 55

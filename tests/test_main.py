@@ -4,7 +4,7 @@ import pytest
 
 @pytest.fixture(scope='module')
 def fiskdir_wfs():
-    return wfs.get_wfs(wfs.FISKDIR_URL)
+    return wfs.get_wfs(wfs.servers['fiskdir'])
 
 
 class Test_get_layer:
@@ -21,3 +21,9 @@ class Test_get_layer:
 
 def test_writable_location_returns_string():
     assert isinstance(wfs.writable_location(), str)
+
+
+def test_resource_returns_existing_file():
+    import os
+    fname = wfs.resource('layer_262', 'fiskdir', recompute=True)
+    assert os.path.isfile(fname)

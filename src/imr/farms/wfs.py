@@ -1,7 +1,9 @@
 from osgeo import ogr, gdal
 
 
-FISKDIR_URL = 'https://ogc.fiskeridir.no/wfs.ashx'
+servers = {
+    'fiskdir': 'https://ogc.fiskeridir.no/wfs.ashx',
+}
 
 
 def get_wfs(url):
@@ -44,4 +46,22 @@ def download_wfs_layer(layer, url, outfile):
     import subprocess
     import logging
     logging.getLogger(__name__).info(f'Downloading from {url}')
-    subprocess.run(['ogr2ogr', '-f netCDF', outfile, f'WFS:"{url}"', layer])
+    cmd = f'ogr2ogr -f netCDF {outfile} WFS:"{url}" {layer}'
+    subprocess.run(cmd)
+
+
+def resource(layer, server, recompute=False):
+    from pathlib import Path
+
+    outdir = Path(writable_location()).joinpath(server)
+    outdir.mkdir(parents=True, exist_ok=True)
+    outfile = outdir.joinpath(layer + '.nc')
+
+    if recompute or not outfile.exists():
+        url = servers[server]
+        download_wfs_layer(layer, url, outfile)
+
+    if not outfile.exists():
+        raise IOError(f'Unable to download resource {layer} from {server}')
+
+    return outfile

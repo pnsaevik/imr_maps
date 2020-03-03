@@ -5,7 +5,7 @@ python:
 install:
   - pwd
   - ls
-  - pip install -e ./setup.py # -r requirements.txt
+  - pip install .
 
 script:
   - pytest

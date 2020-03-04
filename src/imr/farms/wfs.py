@@ -67,16 +67,16 @@ def resource(layer, server, recompute=False):
     return outfile
 
 
-def locations():
+def locations(recompute=False):
     import xarray as xr
-    fname = resource('layer_262', 'fiskdir')
+    fname = resource('layer_262', 'fiskdir', recompute)
     dset = xr.open_dataset(fname)
     return dset.assign_coords(record=dset.loknr.values)
 
 
-def areas():
+def areas(recompute=False):
     import xarray as xr
-    fname = resource('layer_203', 'fiskdir')
+    fname = resource('layer_203', 'fiskdir', recompute)
     dset = xr.open_dataset(fname)
     loknr = [int(n.decode('utf8').split(' ')[0]) for n in dset.lokalitet.values]
     dset = dset.assign(loknr=xr.Variable('record', loknr))

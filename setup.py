@@ -43,6 +43,8 @@ setup(
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 3.6',
+
+        "Operating System :: OS Independent",
     ],
     author='Pål Næverlid Sævik',
     author_email='a5606@hi.no',

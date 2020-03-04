@@ -3,10 +3,11 @@ from setuptools import setup, find_namespace_packages
 
 def get_gdal_version():
     import subprocess
+    from subprocess import PIPE
     import re
     try:
-        retval = subprocess.run(['gdalinfo', '--version'], capture_output=True)
-    except FileNotFoundError as err:
+        retval = subprocess.run(['gdalinfo', '--version'], stdout=PIPE)
+    except FileNotFoundError:
         raise FileNotFoundError('GDAL not found on path. Please install GDAL.')
     text = retval.stdout.decode('utf8')
     version_match = re.match(r'.*?(\d*\.\d*\.\d*)', text)

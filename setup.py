@@ -49,5 +49,6 @@ setup(
     description='Retrieve public data on Norwegian aquaculture locations',
     install_requires=[
         'numpy', 'pytest', 'GDAL==' + get_gdal_version(), 'xarray', 'netCDF4',
-    ]
+    ],
+    python_requires='>=3.6',
 )

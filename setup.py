@@ -24,7 +24,7 @@ setup(
     packages=find_namespace_packages(where='src'),
     package_dir={'': 'src'},
     # package_data={'imr.farms.data': ['*']},
-    url='',
+    url='https://travis-ci.com/pnsaevik/imr_farms',
     license='MIT',
     classifiers=[
         # How mature is this project? Common values are

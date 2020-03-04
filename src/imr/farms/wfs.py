@@ -46,7 +46,7 @@ def download_wfs_layer(layer, url, outfile):
     import subprocess
     import logging
     logging.getLogger(__name__).info(f'Downloading {layer} from {url}')
-    cmd = ['ogr2ogr', '-f', 'netCDF', f'"{outfile}"', f'WFS:"{url}"', f'{layer}']
+    cmd = ['ogr2ogr', '-f', 'netCDF', f'{outfile}', f'WFS:{url}', f'{layer}']
     subprocess.run(cmd)
 
 

@@ -2,19 +2,19 @@ language: python
 python: 
 - "3.6"
 
+addons:
+  apt:
+    sources:
+      - sourceline: "ppa:ubuntugis/ppa"
+    packages:
+      - gdal-bin
+      - libgdal-dev
+
 before_install:
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - source "$HOME/miniconda/etc/profile.d/conda.sh"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  - conda info -a
+  - gdal-config --version
+  - pip install --global-option=build_ext --global-option="-I/usr/include/gdal" GDAL==`gdal-config --version`
 
 install:
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
-  - conda activate test-environment
-  - conda install -y GDAL
   - pip install .
 
 script:

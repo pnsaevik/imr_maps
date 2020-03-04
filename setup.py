@@ -20,7 +20,7 @@ def get_gdal_version():
 
 setup(
     name='imr_farms',
-    version='0.1.0',
+    version='1.0.0',
     packages=find_namespace_packages(where='src'),
     package_dir={'': 'src'},
     # package_data={'imr.farms.data': ['*']},

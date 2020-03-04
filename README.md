@@ -29,7 +29,7 @@ The package provides two functions, `imr.farms.locations()` and
 `imr.farms.areas()`, supplied with an optional `recompute` parameter.
 Both return an `xarray` dataset, directly downloaded from
 https://ogc.fiskeridir.no/wfs.ashx . The tables are cached locally (in
-`.local/share` as georeferenced netCDF files, and re-downloaded only when the
+`.local/share`) as georeferenced netCDF files, and re-downloaded only when the
 `recompute` parameter is set to `True`.
 
 Sample usage:

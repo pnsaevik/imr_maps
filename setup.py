@@ -1,5 +1,22 @@
 from setuptools import setup, find_namespace_packages
 
+
+def get_gdal_version():
+    import subprocess
+    import re
+    try:
+        retval = subprocess.run(['gdalinfo', '--version'], capture_output=True)
+    except FileNotFoundError as err:
+        raise FileNotFoundError('GDAL not found on path. Please install GDAL.')
+    text = retval.stdout.decode('utf8')
+    version_match = re.match(r'.*?(\d*\.\d*\.\d*)', text)
+    if version_match:
+        version = version_match.group(1)
+    else:
+        raise FileNotFoundError('Unknown GDAL version found on path.')
+    return version
+
+
 setup(
     name='imr_farms',
     version='0.1.0',
@@ -29,5 +46,5 @@ setup(
     author='Pål Næverlid Sævik',
     author_email='a5606@hi.no',
     description='Retrieve public data on Norwegian aquaculture locations',
-    install_requires=['numpy', 'pytest', 'GDAL', 'xarray', 'netCDF4']
+    install_requires=['numpy', 'pytest', 'GDAL==' + get_gdal_version(), 'xarray', 'netCDF4']
 )

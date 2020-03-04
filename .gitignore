@@ -3,3 +3,6 @@
 
 # pip files
 */*.egg-info/*
+
+# Compiled files
+*.pyc

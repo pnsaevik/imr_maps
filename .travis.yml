@@ -10,10 +10,6 @@ addons:
       - gdal-bin
       - libgdal-dev
 
-before_install:
-  - gdal-config --version
-  - pip install --global-option=build_ext --global-option="-I/usr/include/gdal" GDAL==`gdal-config --version`
-
 install:
   - pip install .
 

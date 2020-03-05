@@ -1,4 +1,5 @@
 from osgeo import osr
+import numpy as np
 
 
 EPSG_CODES = dict(
@@ -71,3 +72,13 @@ def projection_local(lon, lat):
     ref = osr.SpatialReference()
     ref.ImportFromWkt(wkt)
     return ref
+
+
+def transform(lon, lat, from_crs, to_crs):
+    if len(lat) == 0 and len(lon) == 0:
+        return np.array([lat, lon])
+
+    ct = osr.CoordinateTransformation(from_crs, to_crs)
+
+    points = np.array([lon, lat, np.zeros_like(lon)]).T
+    return np.array(ct.TransformPoints(points)).T[:2]

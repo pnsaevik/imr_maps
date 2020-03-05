@@ -1,5 +1,6 @@
 from osgeo import osr
 import numpy as np
+import xarray as xr
 
 
 EPSG_CODES = dict(
@@ -134,3 +135,47 @@ def transform(lon, lat, from_crs, to_crs):
 
     points = np.array([lon, lat, np.zeros_like(lon)]).T
     return np.array(ct.TransformPoints(points)).T[:2]
+
+
+def add_crs_to_dataset(dset, coords, proj):
+    wkt = proj.ExportToWkt()
+    dproj = xr.DataArray(
+        dims=(),
+        data=0,
+        attrs=dict(long_name="CRS definition", crs_wkt=wkt, spatial_ref=wkt),
+    )
+
+    # --- Add CRS definition ---
+
+    # If WGS84
+    if wkt == projection_from_epsg(4326).ExportToWkt():
+        dproj.name = "wgs84"
+        dproj.attrs['grid_mapping_name'] = 'latitude_longitude'
+
+    dset = dset.assign({dproj.name: dproj})
+
+    # --- Add attributes to coordinates ---
+
+    # If WGS84
+    if wkt == projection_from_epsg(4326).ExportToWkt():
+        if coords[0].startswith('la') and coords[1].startswith('lo'):
+            coords = [coords[1], coords[0]]
+        dset.coords[coords[0]].attrs['standard_name'] = 'longitude'
+        dset.coords[coords[0]].attrs['units'] = 'degrees_east'
+        dset.coords[coords[0]].attrs['axis'] = 'X'
+        dset.coords[coords[1]].attrs['standard_name'] = 'latitude'
+        dset.coords[coords[1]].attrs['units'] = 'degrees_north'
+        dset.coords[coords[1]].attrs['axis'] = 'Y'
+
+    # --- Add attributes to data vars ---
+
+    for v in dset.data_vars:
+        if all(c in dset[v].coords for c in coords):
+            dset[v].attrs['grid_mapping'] = dproj.name
+
+    # --- Add global attributes
+
+    if 'Conventions' not in dset.attrs:
+        dset.attrs['Conventions'] = 'CF-1.8'
+
+    return dset

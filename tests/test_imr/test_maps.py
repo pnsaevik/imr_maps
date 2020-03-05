@@ -147,3 +147,44 @@ class Test_transform:
         xm, ym = crs.transform(x, y, nf160_A01m, nf160_A01)
         assert np.all(np.isclose(xm, [0, 1, 2], atol=1e-5))
         assert np.all(np.isclose(ym, [0, 0, 1], atol=1e-5))
+
+
+class Test_add_crs_to_dataset:
+    @pytest.fixture(scope='class')
+    def dset(self):
+        return xr.Dataset(
+            data_vars=dict(
+                mydata=xr.Variable(
+                    dims=('band', 'lat', 'lon'),
+                    data=np.arange(2 * 3 * 4).reshape((2, 3, 4)),
+                ),
+            ),
+            coords=dict(
+                lat=[59, 60, 61],
+                lon=[4, 5, 6, 7],
+            ),
+        )
+
+    def test_add_crsdef_when_wgs84(self, dset):
+        wgs84 = crs.projection_from_epsg(4326)
+        new_dset = crs.add_crs_to_dataset(dset, ['lon', 'lat'], wgs84)
+        assert set(new_dset.wgs84.attrs.keys()) == {
+            'long_name', 'grid_mapping_name', 'crs_wkt', 'spatial_ref'}
+
+    def test_add_coordattr_when_wgs84(self, dset):
+        wgs84 = crs.projection_from_epsg(4326)
+        new_dset = crs.add_crs_to_dataset(dset, ['lon', 'lat'], wgs84)
+        assert set(new_dset.lat.attrs.keys()) == {
+            'standard_name', 'units', 'axis'}
+        assert set(new_dset.lon.attrs.keys()) == {
+            'standard_name', 'units', 'axis'}
+
+    def test_add_gridmappings_when_wgs84(self, dset):
+        wgs84 = crs.projection_from_epsg(4326)
+        new_dset = crs.add_crs_to_dataset(dset, ['lon', 'lat'], wgs84)
+        assert set(new_dset.mydata.attrs.keys()) == {'grid_mapping'}
+
+    def test_add_globals_when_wgs84(self, dset):
+        wgs84 = crs.projection_from_epsg(4326)
+        new_dset = crs.add_crs_to_dataset(dset, ['lon', 'lat'], wgs84)
+        assert set(new_dset.attrs.keys()) == {'Conventions'}

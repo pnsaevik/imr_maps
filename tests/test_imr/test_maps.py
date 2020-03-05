@@ -246,3 +246,41 @@ class Test_add_crs_to_dataset:
             'standard_name', 'axis'}
         assert set(new_dset.y.attrs.keys()) == {
             'standard_name', 'axis'}
+
+    @pytest.fixture(scope='class')
+    def dset3(self):
+        return xr.Dataset(
+            data_vars=dict(
+                mydata=xr.Variable(
+                    dims=('band', 'y', 'x'),
+                    data=np.arange(2 * 3 * 4).reshape((2, 3, 4)),
+                ),
+            ),
+            coords=dict(
+                y=[0, 10000, 20000],
+                x=[0, 10000, 20000, 30000],
+            ),
+        )
+
+    def test_add_crsdef_when_local(self, dset3):
+        local = crs.projection_local(5, 60)
+        new_dset = crs.add_crs_to_dataset(dset3, ['x', 'y'], local)
+        assert set(new_dset.crs_def.attrs.keys()) == {
+            'false_easting',
+            'false_northing',
+            'latitude_of_projection_origin',
+            'longitude_of_central_meridian',
+            'scale_factor_at_central_meridian',
+            'crs_wkt',
+            'geographic_crs_name',
+            'grid_mapping_name',
+            'horizontal_datum_name',
+            'inverse_flattening',
+            'long_name',
+            'prime_meridian_name',
+            'projected_crs_name',
+            'reference_ellipsoid_name',
+            'semi_major_axis',
+            'spatial_ref',
+            'towgs84'
+        }

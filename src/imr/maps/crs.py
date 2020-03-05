@@ -41,3 +41,33 @@ def projection_from_epsg(epsg_code):
     proj = osr.SpatialReference()
     proj.ImportFromEPSG(epsg_code)
     return proj
+
+
+def projection_local(lon, lat):
+    wkt = """
+        PROJCS["Local ETRS89",
+            GEOGCS["ETRS89",
+                DATUM["European_Terrestrial_Reference_System_1989",
+                    SPHEROID["GRS 1980",6378137,298.257222101,
+                        AUTHORITY["EPSG","7019"]],
+                    AUTHORITY["EPSG","6258"]],
+                PRIMEM["Greenwich",0,
+                    AUTHORITY["EPSG","8901"]],
+                UNIT["degree",0.01745329251994328,
+                    AUTHORITY["EPSG","9122"]],
+                AUTHORITY["EPSG","4258"]],
+            UNIT["metre",1,
+                AUTHORITY["EPSG","9001"]],
+            PROJECTION["Transverse_Mercator"],
+            PARAMETER["latitude_of_origin",""" + str(lat) + """],
+            PARAMETER["central_meridian",""" + str(lon) + """],
+            PARAMETER["scale_factor",1.0],
+            PARAMETER["false_easting",0],
+            PARAMETER["false_northing",0],
+            AXIS["Easting",EAST],
+            AXIS["Northing",NORTH]]
+            """
+
+    ref = osr.SpatialReference()
+    ref.ImportFromWkt(wkt)
+    return ref

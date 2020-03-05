@@ -26,3 +26,9 @@ class Test_projection_from_dataset:
 
         proj = crs.projection_from_dataset(dset)
         assert wkt == proj.ExportToWkt()
+
+
+class Test_projection_local:
+    def test_returns_projection(self):
+        proj = crs.projection_local(lon=5, lat=60)
+        assert proj.ExportToWkt().startswith('PROJCS')

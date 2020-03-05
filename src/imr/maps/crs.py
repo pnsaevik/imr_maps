@@ -27,7 +27,7 @@ EPSG_CODES = dict(
 
 def projection_from_dataset(dset):
     potential_projections = [(k, v) for k, v in dset.data_vars.items()
-                             if v.shape == () and 'spatial_ref' in v.attrs]
+                             if v.shape == () and 'grid_mapping_name' in v.attrs]
     
     if len(potential_projections) == 0:
         raise ValueError("No projection found in dataset")

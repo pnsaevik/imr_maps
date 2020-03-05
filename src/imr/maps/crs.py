@@ -139,18 +139,38 @@ def transform(lon, lat, from_crs, to_crs):
 
 def add_crs_to_dataset(dset, coords, proj):
     wkt = proj.ExportToWkt()
-    dproj = xr.DataArray(
-        dims=(),
-        data=0,
-        attrs=dict(long_name="CRS definition", crs_wkt=wkt, spatial_ref=wkt),
-    )
 
     # --- Add CRS definition ---
 
+    dproj = xr.DataArray(
+        dims=(), data=0, name='crs_def',
+        attrs=dict(
+            long_name="CRS definition",
+            crs_wkt=wkt,
+            spatial_ref=wkt,
+            semi_major_axis=proj.GetSemiMajor(),
+            inverse_flattening=proj.GetInvFlattening(),
+            projected_crs_name=proj.GetAttrValue('PROJCS'),
+            geographic_crs_name=proj.GetAttrValue('GEOGCS'),
+            horizontal_datum_name=proj.GetAttrValue('DATUM'),
+            reference_ellipsoid_name=proj.GetAttrValue('SPHEROID'),
+            prime_meridian_name=proj.GetAttrValue('PRIMEM'),
+            towgs84=proj.GetTOWGS84(),
+        ),
+    )
+
     # If WGS84
     if wkt == projection_from_epsg(4326).ExportToWkt():
-        dproj.name = "wgs84"
         dproj.attrs['grid_mapping_name'] = 'latitude_longitude'
+
+    # If transverse mercator
+    elif proj.GetAttrValue('PROJECTION', 0) == "Transverse_Mercator":
+        dproj.attrs['grid_mapping_name'] = 'transverse_mercator'
+        dproj.attrs['scale_factor_at_central_meridian'] = proj.GetProjParm('scale_factor')
+        dproj.attrs['longitude_of_central_meridian'] = proj.GetProjParm('central_meridian')
+        dproj.attrs['latitude_of_projection_origin'] = proj.GetProjParm('latitude_of_origin')
+        dproj.attrs['false_easting'] = proj.GetProjParm('false_easting')
+        dproj.attrs['false_northing'] = proj.GetProjParm('false_northing')
 
     dset = dset.assign({dproj.name: dproj})
 
@@ -165,6 +185,13 @@ def add_crs_to_dataset(dset, coords, proj):
         dset.coords[coords[0]].attrs['axis'] = 'X'
         dset.coords[coords[1]].attrs['standard_name'] = 'latitude'
         dset.coords[coords[1]].attrs['units'] = 'degrees_north'
+        dset.coords[coords[1]].attrs['axis'] = 'Y'
+
+    # If transverse mercator
+    elif proj.GetAttrValue('PROJECTION', 0) == "Transverse_Mercator":
+        dset.coords[coords[0]].attrs['standard_name'] = 'projection_x_coordinate'
+        dset.coords[coords[0]].attrs['axis'] = 'X'
+        dset.coords[coords[1]].attrs['standard_name'] = 'projection_y_coordinate'
         dset.coords[coords[1]].attrs['axis'] = 'Y'
 
     # --- Add attributes to data vars ---

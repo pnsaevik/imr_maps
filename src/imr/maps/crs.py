@@ -13,3 +13,9 @@ def projection_from_dataset(dset):
     proj = osr.SpatialReference()
     proj.ImportFromWkt(wkt)
     return proj
+
+
+def projection_from_epsg(epsg_code):
+    proj = osr.SpatialReference()
+    proj.ImportFromEPSG(epsg_code)
+    return proj

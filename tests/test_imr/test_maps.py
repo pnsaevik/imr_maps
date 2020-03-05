@@ -8,3 +8,21 @@ class Test_projection_from_dataset:
         with pytest.raises(ValueError):
             empty_dset = xr.Dataset()
             crs.projection_from_dataset(empty_dset)
+
+    def test_returns_proj_if_spatial_ref_present(self):
+        wkt = crs.projection_from_epsg(4326).ExportToWkt()
+
+        dset = xr.Dataset(
+            data_vars=dict(
+                my_transform=xr.Variable(
+                    dims=(),
+                    data=0,
+                    attrs=dict(
+                        spatial_ref=wkt,
+                    ),
+                )
+            )
+        )
+
+        proj = crs.projection_from_dataset(dset)
+        assert wkt == proj.ExportToWkt()

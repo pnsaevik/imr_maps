@@ -140,11 +140,13 @@ def transform(lon, lat, from_crs, to_crs):
 def assign_crs(dset, **crs_kwargs):
     """Create grid_mapping variable from projection and assign to variable"""
 
-    mapping = {key: _proj_darr(key, proj) for key, proj in crs_kwargs.items()}
+    mapping = {key: grid_mapping_from_proj(key, proj)
+               for key, proj in crs_kwargs.items()}
     return dset.assign(mapping)
 
 
-def _proj_darr(name, proj):
+def grid_mapping_from_proj(name, proj):
+    """Create grid_mapping variable from projection"""
     wkt = proj.ExportToWkt()
     dproj = xr.DataArray(
         dims=(), data=np.int8(0), name=name,

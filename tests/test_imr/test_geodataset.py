@@ -1,4 +1,3 @@
-from imr.maps import crs
 from imr.maps import GeoDataset
 from imr.maps import SpatialReference
 import xarray as xr

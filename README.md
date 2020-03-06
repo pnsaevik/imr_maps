@@ -25,12 +25,12 @@ After the dependencies are installed, the package is installed using
 
 ## Usage
 
-The package provides two functions, `imr.farms.locations()` and
-`imr.farms.areas()`, supplied with an optional `recompute` parameter.
+The package `imr.farms` provides two functions, `locations()` and
+`areas()`, supplied with an optional `reload` parameter.
 Both return an `xarray` dataset, directly downloaded from
 https://ogc.fiskeridir.no/wfs.ashx . The tables are cached locally (in
 `.local/share`) as georeferenced netCDF files, and re-downloaded only when the
-`recompute` parameter is set to `True`.
+`reload` parameter is set to `True`.
 
 Sample usage:
 

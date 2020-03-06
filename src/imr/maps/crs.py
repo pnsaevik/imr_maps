@@ -137,13 +137,10 @@ def transform(lon, lat, from_crs, to_crs):
     return np.array(ct.TransformPoints(points)).T[:2]
 
 
-def add_crs_to_dataset(dset, coords, proj):
+def assign_crs(dset, name, proj):
     wkt = proj.ExportToWkt()
-
-    # --- Add CRS definition ---
-
     dproj = xr.DataArray(
-        dims=(), data=0, name='crs_def',
+        dims=(), data=np.int8(0), name=name,
         attrs=dict(
             long_name="CRS definition",
             crs_wkt=wkt,
@@ -159,22 +156,34 @@ def add_crs_to_dataset(dset, coords, proj):
         ),
     )
 
-    # If WGS84
-    if wkt == projection_from_epsg(4326).ExportToWkt():
+    proj_name = proj.GetAttrValue('PROJECTION', 0)
+
+    # If WGS84 or ETRS89
+    if proj_name is None:
         dproj.attrs['grid_mapping_name'] = 'latitude_longitude'
 
     # If transverse mercator
-    elif proj.GetAttrValue('PROJECTION', 0) == "Transverse_Mercator":
+    elif proj_name == "Transverse_Mercator":
         dproj.attrs['grid_mapping_name'] = 'transverse_mercator'
-        dproj.attrs['scale_factor_at_central_meridian'] = proj.GetProjParm('scale_factor')
-        dproj.attrs['longitude_of_central_meridian'] = proj.GetProjParm('central_meridian')
-        dproj.attrs['latitude_of_projection_origin'] = proj.GetProjParm('latitude_of_origin')
+        dproj.attrs['scale_factor_at_central_meridian'] = proj.GetProjParm(
+            'scale_factor')
+        dproj.attrs['longitude_of_central_meridian'] = proj.GetProjParm(
+            'central_meridian')
+        dproj.attrs['latitude_of_projection_origin'] = proj.GetProjParm(
+            'latitude_of_origin')
         dproj.attrs['false_easting'] = proj.GetProjParm('false_easting')
         dproj.attrs['false_northing'] = proj.GetProjParm('false_northing')
 
-    dset = dset.assign({dproj.name: dproj})
+    return dset.assign({dproj.name: dproj})
+
+
+def add_crs_to_dataset(dset, coords, proj):
+
+    dset = assign_crs(dset, 'crs_def', proj)
 
     # --- Add attributes to coordinates ---
+
+    wkt = proj.ExportToWkt()
 
     # If WGS84
     if wkt == projection_from_epsg(4326).ExportToWkt():
@@ -198,7 +207,7 @@ def add_crs_to_dataset(dset, coords, proj):
 
     for v in dset.data_vars:
         if all(c in dset[v].coords for c in coords):
-            dset[v].attrs['grid_mapping'] = dproj.name
+            dset[v].attrs['grid_mapping'] = 'crs_def'
 
     # --- Add global attributes
 

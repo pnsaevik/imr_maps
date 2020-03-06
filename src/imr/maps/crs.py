@@ -38,10 +38,6 @@ class SpatialReference(osr.SpatialReference):
         return proj
 
     @staticmethod
-    def from_grid_mapping(grid_mapping):
-        return SpatialReference.from_wkt(grid_mapping.crs_wkt)
-
-    @staticmethod
     def local(lon, lat):
         wkt = f"""
             PROJCS["Local ETRS89",

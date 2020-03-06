@@ -1,11 +1,41 @@
 from imr.maps import SpatialReference
+from osgeo import osr
 import numpy as np
 
 
-class Test_projection_local:
-    def test_returns_projection(self):
-        proj = SpatialReference.local(lon=5, lat=60)
-        assert proj.ExportToWkt().startswith('PROJCS')
+class Test_from_epsg:
+    def test_is_valid_spatial_reference(self):
+        sr = SpatialReference.from_epsg(4326)
+        assert isinstance(sr, osr.SpatialReference)
+        assert sr.ExportToWkt()
+
+
+class Test_from_wkt:
+    def test_is_valid_spatial_reference(self):
+        sr = SpatialReference.from_wkt('GEOGCS["WGS 84",DATUM["WGS_1984"]]')
+        assert isinstance(sr, osr.SpatialReference)
+        assert sr.ExportToWkt()
+
+
+class Test_local:
+    def test_is_valid_spatial_reference(self):
+        sr = SpatialReference.local(lon=5, lat=60)
+        assert isinstance(sr, osr.SpatialReference)
+        assert sr.ExportToWkt()
+
+
+class Test_nf160:
+    def test_is_valid_spatial_reference(self):
+        sr = SpatialReference.nf160('A01')
+        assert isinstance(sr, osr.SpatialReference)
+        assert sr.ExportToWkt()
+
+
+class Test_nk800:
+    def test_is_valid_spatial_reference(self):
+        sr = SpatialReference.nk800()
+        assert isinstance(sr, osr.SpatialReference)
+        assert sr.ExportToWkt()
 
 
 class Test_transform:

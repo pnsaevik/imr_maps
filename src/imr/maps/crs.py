@@ -246,7 +246,11 @@ def add_geoattrs_to_coordinates(dset, grid_mapping, *coords):
 
     for v in dset.data_vars:
         if all(c in dset[v].coords for c in coords):
-            dset[v].attrs['grid_mapping'] = grid_mapping.name
+            old_text = dset[v].attrs.get('grid_mapping', '')
+            if old_text != '':
+                old_text += ' '
+            new_text = f'{grid_mapping.name}: {" ".join(coords)}'
+            dset[v].attrs['grid_mapping'] = old_text + new_text
 
     # --- Add global attributes
 

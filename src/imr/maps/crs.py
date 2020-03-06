@@ -137,8 +137,14 @@ def transform(lon, lat, from_crs, to_crs):
     return np.array(ct.TransformPoints(points)).T[:2]
 
 
-def assign_crs(dset, name, proj):
+def assign_crs(dset, **crs_kwargs):
     """Create grid_mapping variable from projection and assign to variable"""
+
+    mapping = {key: _proj_darr(key, proj) for key, proj in crs_kwargs.items()}
+    return dset.assign(mapping)
+
+
+def _proj_darr(name, proj):
     wkt = proj.ExportToWkt()
     dproj = xr.DataArray(
         dims=(), data=np.int8(0), name=name,
@@ -175,12 +181,12 @@ def assign_crs(dset, name, proj):
         dproj.attrs['false_easting'] = proj.GetProjParm('false_easting')
         dproj.attrs['false_northing'] = proj.GetProjParm('false_northing')
 
-    return dset.assign({dproj.name: dproj})
+    return dproj
 
 
 def add_crs_to_dataset(dset, coords, proj):
 
-    dset = assign_crs(dset, 'crs_def', proj)
+    dset = assign_crs(dset, crs_def=proj)
 
     # --- Add attributes to coordinates ---
 

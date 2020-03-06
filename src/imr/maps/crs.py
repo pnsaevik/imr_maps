@@ -187,6 +187,9 @@ def grid_mapping_from_proj(name, proj):
         dproj.attrs['false_easting'] = proj.GetProjParm('false_easting')
         dproj.attrs['false_northing'] = proj.GetProjParm('false_northing')
 
+    else:
+        raise ValueError(f'Unknown projection: {proj_name}')
+
     return dproj
 
 
@@ -215,6 +218,9 @@ def add_crs_to_dataset(dset, coords, proj):
         dset.coords[coords[0]].attrs['axis'] = 'X'
         dset.coords[coords[1]].attrs['standard_name'] = 'projection_y_coordinate'
         dset.coords[coords[1]].attrs['axis'] = 'Y'
+
+    else:
+        raise ValueError(f'Unknown grid mapping: {grid_mapping_name}')
 
     # --- Add attributes to data vars ---
 

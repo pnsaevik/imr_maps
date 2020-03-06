@@ -1,28 +1,34 @@
-from imr.maps import crs, geodataset
+from imr.maps import crs
+from imr.maps import GeoDataset
 import xarray as xr
 import pytest
 import numpy as np
 
 
-class Test_add_crs_to_dataset:
-    @pytest.fixture(scope='class')
-    def dset(self):
-        return xr.Dataset(
-            data_vars=dict(
-                mydata=xr.Variable(
-                    dims=('band', 'lat', 'lon'),
-                    data=np.arange(2 * 3 * 4).reshape((2, 3, 4)),
-                ),
-            ),
-            coords=dict(
-                lat=[59, 60, 61],
-                lon=[4, 5, 6, 7],
-            ),
-        )
+wgs84 = crs.projection_from_epsg(4326)
+utm33n = crs.projection_from_epsg(32633)
 
+
+@pytest.fixture(scope='module')
+def dset():
+    return GeoDataset(
+        data_vars=dict(
+            mydata=xr.Variable(
+                dims=('band', 'lat', 'lon'),
+                data=np.arange(2 * 3 * 4).reshape((2, 3, 4)),
+            ),
+        ),
+        coords=dict(
+            lat=[59, 60, 61],
+            lon=[4, 5, 6, 7],
+        ),
+    )
+
+
+class Test_create_grid_mapping:
     def test_add_crsdef_when_wgs84(self, dset):
-        wgs84 = crs.projection_from_epsg(4326)
-        new_dset = geodataset.add_crs_to_dataset(dset, ['lon', 'lat'], wgs84)
+        new_dset = dset.create_grid_mapping(wgs84)
+        assert isinstance(dset, GeoDataset)
         assert set(new_dset.crs_def.attrs.keys()) == {
             'crs_wkt',
             'geographic_crs_name',
@@ -38,27 +44,29 @@ class Test_add_crs_to_dataset:
             'towgs84'
          }
 
+
+class Test_create_geocoords:
     def test_add_coordattr_when_wgs84(self, dset):
-        wgs84 = crs.projection_from_epsg(4326)
-        new_dset = geodataset.add_crs_to_dataset(dset, ['lon', 'lat'], wgs84)
+        new_dset = dset.create_grid_mapping(wgs84)
+        new_dset = new_dset.create_geocoords(['lon', 'lat'])
         assert set(new_dset.lat.attrs.keys()) == {
             'standard_name', 'units', 'axis'}
         assert set(new_dset.lon.attrs.keys()) == {
             'standard_name', 'units', 'axis'}
 
     def test_add_gridmappings_when_wgs84(self, dset):
-        wgs84 = crs.projection_from_epsg(4326)
-        new_dset = geodataset.add_crs_to_dataset(dset, ['lon', 'lat'], wgs84)
+        new_dset = dset.create_grid_mapping(wgs84)
+        new_dset = new_dset.create_geocoords(['lon', 'lat'])
         assert set(new_dset.mydata.attrs.keys()) == {'grid_mapping'}
 
     def test_add_globals_when_wgs84(self, dset):
-        wgs84 = crs.projection_from_epsg(4326)
-        new_dset = geodataset.add_crs_to_dataset(dset, ['lon', 'lat'], wgs84)
+        new_dset = dset.create_grid_mapping(wgs84)
+        new_dset = new_dset.create_geocoords(['lon', 'lat'])
         assert set(new_dset.attrs.keys()) == {'Conventions'}
 
     @pytest.fixture(scope='class')
     def dset2(self):
-        return xr.Dataset(
+        return GeoDataset(
             data_vars=dict(
                 mydata=xr.Variable(
                     dims=('band', 'y', 'x'),
@@ -72,8 +80,8 @@ class Test_add_crs_to_dataset:
         )
 
     def test_add_crsdef_when_utm33n(self, dset2):
-        utm33n = crs.projection_from_epsg(32633)
-        new_dset = geodataset.add_crs_to_dataset(dset2, ['x', 'y'], utm33n)
+        new_dset = dset2.create_grid_mapping(utm33n)
+        new_dset = new_dset.create_geocoords(['x', 'y'])
         assert set(new_dset.crs_def.attrs.keys()) == {
             'false_easting',
             'false_northing',
@@ -95,8 +103,8 @@ class Test_add_crs_to_dataset:
         }
 
     def test_add_coordattr_when_utm33n(self, dset2):
-        utm33n = crs.projection_from_epsg(32633)
-        new_dset = geodataset.add_crs_to_dataset(dset2, ['x', 'y'], utm33n)
+        new_dset = dset2.create_grid_mapping(utm33n)
+        new_dset = new_dset.create_geocoords(['x', 'y'])
         assert set(new_dset.x.attrs.keys()) == {
             'standard_name', 'axis'}
         assert set(new_dset.y.attrs.keys()) == {
@@ -104,7 +112,7 @@ class Test_add_crs_to_dataset:
 
     @pytest.fixture(scope='class')
     def dset3(self):
-        return xr.Dataset(
+        return GeoDataset(
             data_vars=dict(
                 mydata=xr.Variable(
                     dims=('band', 'y', 'x'),
@@ -119,7 +127,8 @@ class Test_add_crs_to_dataset:
 
     def test_add_crsdef_when_local(self, dset3):
         local = crs.projection_local(5, 60)
-        new_dset = geodataset.add_crs_to_dataset(dset3, ['x', 'y'], local)
+        new_dset = dset3.create_grid_mapping(local)
+        new_dset = new_dset.create_geocoords(['x', 'y'])
         assert set(new_dset.crs_def.attrs.keys()) == {
             'false_easting',
             'false_northing',

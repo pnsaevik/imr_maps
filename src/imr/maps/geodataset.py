@@ -2,12 +2,19 @@ import xarray as xr
 import numpy as np
 
 
-def assign_crs(dset, **crs_kwargs):
-    """Create grid_mapping variable from projection and assign to variable"""
+class GeoDataset(xr.Dataset):
+    def create_grid_mapping(self, proj, name='crs_def'):
+        grid_mapping = grid_mapping_from_proj(name, proj)
+        return self.assign({name: grid_mapping})
+    
+    def create_geocoords(self, coords, grid_mapping=None):
+        if grid_mapping is None:
+            grid_mapping = next(v for v in self.get_grid_mappings().values())
+        return add_geoattrs_to_coordinates(self, grid_mapping, coords)
 
-    mapping = {key: grid_mapping_from_proj(key, proj)
-               for key, proj in crs_kwargs.items()}
-    return dset.assign(mapping)
+    def get_grid_mappings(self):
+        return {k: v for k, v in self.data_vars.items()
+                if 'grid_mapping_name' in v.attrs}
 
 
 def grid_mapping_from_proj(name, proj):
@@ -54,12 +61,7 @@ def grid_mapping_from_proj(name, proj):
     return dproj
 
 
-def add_crs_to_dataset(dset, coords, proj):
-    dset = assign_crs(dset, crs_def=proj)
-    return add_geoattrs_to_coordinates(dset, dset['crs_def'], *coords)
-
-
-def add_geoattrs_to_coordinates(dset, grid_mapping, *coords):
+def add_geoattrs_to_coordinates(dset, grid_mapping, coords):
     """Convert existing dataset coordinates to geocoordinates
 
     Parameters
@@ -70,7 +72,7 @@ def add_geoattrs_to_coordinates(dset, grid_mapping, *coords):
     grid_mapping: xarray.DataArray, xarray.Variable
         The grid_mapping entry containing crs definition.
 
-    *coords: str
+    coords:
         Ordered list of coordinate names. In the case of latitude_longitude
         grid mapping, the correct order is ['lon', 'lat']. The coordinates must
         exist in the dataset.

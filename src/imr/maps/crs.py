@@ -138,6 +138,7 @@ def transform(lon, lat, from_crs, to_crs):
 
 
 def assign_crs(dset, name, proj):
+    """Create grid_mapping variable from projection and assign to variable"""
     wkt = proj.ExportToWkt()
     dproj = xr.DataArray(
         dims=(), data=np.int8(0), name=name,

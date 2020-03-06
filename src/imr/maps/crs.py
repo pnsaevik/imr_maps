@@ -82,37 +82,11 @@ class SpatialReference(osr.SpatialReference):
             'A12': (10004, 9422, 160, 70, 'NF160_A12'),
             'A13': (8754, 10552, 160, 70, 'NF160_A13'),
         }
-        return SpatialReference.nk800(*params[named_area], metric_unit=metric_unit)
+        return _nor_roms(*params[named_area], metric_unit=metric_unit)
 
     @staticmethod
-    def nk800(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False):
-        if metric_unit:
-            unit_str = 'UNIT["metre",1,AUTHORITY["EPSG","9001"]]'
-            dx_unit = dx
-        else:
-            unit_str = f'UNIT["Cells",{dx}]]'
-            dx_unit = 1
-
-        wkt = f"""PROJCS["{name}",
-            GEOGCS["ETRS89",
-                DATUM["European_Terrestrial_Reference_System_1989",
-                    SPHEROID["GRS 1980",6378137,298.257222101,
-                        AUTHORITY["EPSG","7019"]],
-                    AUTHORITY["EPSG","6258"]],
-                PRIMEM["Greenwich",0,
-                    AUTHORITY["EPSG","8901"]],
-                UNIT["degree",0.01745329251994328,
-                    AUTHORITY["EPSG","9122"]],
-                AUTHORITY["EPSG","4258"]],
-            PROJECTION["Polar_Stereographic"],
-            PARAMETER["latitude_of_origin",60],
-            PARAMETER["central_meridian",{ylon}],
-            PARAMETER["scale_factor",1],
-            PARAMETER["false_easting",{xp * dx_unit}],
-            PARAMETER["false_northing",{yp * dx_unit}],
-            {unit_str}"""
-
-        return SpatialReference.from_wkt(wkt)
+    def nk800(metric_unit=False):
+        return _nor_roms(metric_unit=metric_unit)
 
     @staticmethod
     def transform(x, y, from_crs, to_crs):
@@ -123,3 +97,33 @@ class SpatialReference(osr.SpatialReference):
 
         points = np.array([x, y, np.zeros_like(x)]).T
         return np.array(ct.TransformPoints(points)).T[:2]
+
+
+def _nor_roms(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False):
+    if metric_unit:
+        unit_str = 'UNIT["metre",1,AUTHORITY["EPSG","9001"]]'
+        dx_unit = dx
+    else:
+        unit_str = f'UNIT["Cells",{dx}]]'
+        dx_unit = 1
+
+    wkt = f"""PROJCS["{name}",
+        GEOGCS["ETRS89",
+            DATUM["European_Terrestrial_Reference_System_1989",
+                SPHEROID["GRS 1980",6378137,298.257222101,
+                    AUTHORITY["EPSG","7019"]],
+                AUTHORITY["EPSG","6258"]],
+            PRIMEM["Greenwich",0,
+                AUTHORITY["EPSG","8901"]],
+            UNIT["degree",0.01745329251994328,
+                AUTHORITY["EPSG","9122"]],
+            AUTHORITY["EPSG","4258"]],
+        PROJECTION["Polar_Stereographic"],
+        PARAMETER["latitude_of_origin",60],
+        PARAMETER["central_meridian",{ylon}],
+        PARAMETER["scale_factor",1],
+        PARAMETER["false_easting",{xp * dx_unit}],
+        PARAMETER["false_northing",{yp * dx_unit}],
+        {unit_str}"""
+
+    return SpatialReference.from_wkt(wkt)

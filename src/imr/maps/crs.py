@@ -26,14 +26,18 @@ EPSG_CODES = dict(
 
 
 def projection_from_dataset(dset):
-    potential_projections = [(k, v) for k, v in dset.data_vars.items()
-                             if v.shape == () and 'grid_mapping_name' in v.attrs]
+    potential_projections = [v for v in dset.data_vars.values()
+                             if 'grid_mapping_name' in v.attrs]
     
     if len(potential_projections) == 0:
         raise ValueError("No projection found in dataset")
 
+    return projection_from_grid_mapping(potential_projections[0])
+
+
+def projection_from_grid_mapping(grid_mapping):
     # Use the spatial_ref attribute if present
-    wkt = potential_projections[0][1].spatial_ref
+    wkt = grid_mapping.crs_wkt
     proj = osr.SpatialReference()
     proj.ImportFromWkt(wkt)
     return proj

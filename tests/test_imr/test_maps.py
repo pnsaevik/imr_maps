@@ -20,7 +20,7 @@ class Test_projection_from_dataset:
                     data=0,
                     attrs=dict(
                         grid_mapping_name='latitude_longitude',
-                        spatial_ref=wkt,
+                        crs_wkt=wkt,
                     ),
                 )
             )

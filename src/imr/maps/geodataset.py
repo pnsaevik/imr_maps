@@ -3,6 +3,8 @@ import numpy as np
 
 
 class GeoDataset(xr.Dataset):
+    __slots__ = ()
+
     def create_grid_mapping(self, proj, name='crs_def'):
         grid_mapping = grid_mapping_from_proj(name, proj)
         return self.assign({name: grid_mapping})

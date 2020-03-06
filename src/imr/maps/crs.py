@@ -27,18 +27,47 @@ EPSG_CODES = dict(
 class SpatialReference(osr.SpatialReference):
     @staticmethod
     def from_epsg(code):
+        """Create SpatialReference from EPSG code
+        
+        :param code:
+            EPSG code for the spatial reference frame
+        :type code: int
+        :returns:
+            SpatialReference object
+        :rtype: SpatialReference
+        """
         proj = SpatialReference()
         proj.ImportFromEPSG(code)
         return proj
 
     @staticmethod
     def from_wkt(wkt):
+        """Create SpatialReference from Well Known Text (WKT)
+
+        :param wkt:
+            WKT representation of the spatial reference frame
+        :type wkt: str
+        :returns:
+            SpatialReference object
+        :rtype: SpatialReference
+        """
         proj = SpatialReference()
         proj.ImportFromWkt(wkt)
         return proj
 
     @staticmethod
     def local(lon, lat):
+        """Create local metric coordinate system based on ETRS89 and transverse
+        mercator.
+
+        :param lon:
+            Longitude of the central location
+        :param lat:
+            Latitude of the central location
+        :returns:
+            SpatialReference object
+        :rtype: SpatialReference
+        """
         wkt = f"""
             PROJCS["Local ETRS89",
                 GEOGCS["ETRS89",
@@ -67,6 +96,19 @@ class SpatialReference(osr.SpatialReference):
 
     @staticmethod
     def nf160(named_area, metric_unit=False):
+        """Create coordinate system based on the NorFjords160 (NF160) grid
+
+        :param named_area:
+            Either of {'A01', 'A02', ..., 'A13'}
+        :type named_area: str
+        :param metric_unit:
+            True if the coordinate system unit should be meters, False if the
+            unit should be cells.
+        :type metric_unit: bool
+        :returns:
+            SpatialReference object
+        :rtype: SpatialReference
+        """
         params = {
             'A01': (18704, 10752, 160, 70, 'NF160_A01'),
             'A02': (19254, 10352, 160, 70, 'NF160_A02'),
@@ -86,10 +128,39 @@ class SpatialReference(osr.SpatialReference):
 
     @staticmethod
     def nk800(metric_unit=False):
+        """Create coordinate system based on the NorKyst800 (NK800) grid
+
+        :param metric_unit:
+            True if the coordinate system unit should be meters, False if the
+            unit should be cells.
+        :type metric_unit: bool
+        :returns:
+            SpatialReference object
+        :rtype: SpatialReference
+        """
         return _nor_roms(metric_unit=metric_unit)
 
     @staticmethod
     def transform(x, y, from_crs, to_crs):
+        """Transform coordinate values between two coordinate systems
+
+        :param x:
+            First coordinate array
+        :type: numpy.ndarray
+        :param y:
+            Second coordinate array
+        :type: numpy.ndarray
+        :param from_crs:
+            Source coordinates reference frame
+        :type from_crs: osgeo.osr.SpatialReference
+        :param to_crs:
+            Transformed coordinates reference frame
+        :type to_crs: osgeo.osr.SpatialReference
+        :returns:
+            (xp, yp), the transformed coordinates
+        :rtype: (numpy.ndarray, numpy.ndarray)
+        """
+
         if len(y) == 0 and len(x) == 0:
             return np.array([x, y])
 

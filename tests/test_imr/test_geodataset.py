@@ -1,12 +1,13 @@
 from imr.maps import crs
 from imr.maps import GeoDataset
+from imr.maps import SpatialReference
 import xarray as xr
 import pytest
 import numpy as np
 
 
-wgs84 = crs.projection_from_epsg(4326)
-utm33n = crs.projection_from_epsg(32633)
+wgs84 = SpatialReference.from_epsg(4326)
+utm33n = SpatialReference.from_epsg(32633)
 
 
 @pytest.fixture(scope='module')
@@ -126,7 +127,7 @@ class Test_create_geocoords:
         )
 
     def test_add_crsdef_when_local(self, dset3):
-        local = crs.projection_local(5, 60)
+        local = SpatialReference.local(5, 60)
         new_dset = dset3.create_grid_mapping(local)
         new_dset = new_dset.create_geocoords(['x', 'y'])
         assert set(new_dset.crs_def.attrs.keys()) == {

@@ -196,15 +196,17 @@ def grid_mapping_from_proj(name, proj):
 def add_crs_to_dataset(dset, coords, proj):
 
     dset = assign_crs(dset, crs_def=proj)
+    return create_geocoords(dset, dset['crs_def'], *coords)
 
-    # --- Add attributes to coordinates ---
 
-    wkt = proj.ExportToWkt()
+def create_geocoords(dset, grid_mapping, *coords):
+    """Create georeferenced coordinates and assign to dataset"""
 
-    # If WGS84
-    if wkt == projection_from_epsg(4326).ExportToWkt():
-        if coords[0].startswith('la') and coords[1].startswith('lo'):
-            coords = [coords[1], coords[0]]
+    grid_mapping_name = grid_mapping.attrs['grid_mapping_name']
+    dset = dset.copy()
+
+    # If WGS84 or ETRS89
+    if grid_mapping_name == 'latitude_longitude':
         dset.coords[coords[0]].attrs['standard_name'] = 'longitude'
         dset.coords[coords[0]].attrs['units'] = 'degrees_east'
         dset.coords[coords[0]].attrs['axis'] = 'X'
@@ -213,7 +215,7 @@ def add_crs_to_dataset(dset, coords, proj):
         dset.coords[coords[1]].attrs['axis'] = 'Y'
 
     # If transverse mercator
-    elif proj.GetAttrValue('PROJECTION', 0) == "Transverse_Mercator":
+    elif grid_mapping_name == 'transverse_mercator':
         dset.coords[coords[0]].attrs['standard_name'] = 'projection_x_coordinate'
         dset.coords[coords[0]].attrs['axis'] = 'X'
         dset.coords[coords[1]].attrs['standard_name'] = 'projection_y_coordinate'
@@ -226,7 +228,7 @@ def add_crs_to_dataset(dset, coords, proj):
 
     for v in dset.data_vars:
         if all(c in dset[v].coords for c in coords):
-            dset[v].attrs['grid_mapping'] = 'crs_def'
+            dset[v].attrs['grid_mapping'] = grid_mapping.name
 
     # --- Add global attributes
 

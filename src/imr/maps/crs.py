@@ -144,6 +144,9 @@ class SpatialReference(osr.SpatialReference):
     def transform(x, y, from_crs, to_crs):
         """Transform coordinate values between two coordinate systems
 
+        Transform coordinate values between two coordinate systems. The shape
+        of the input arrays are preserved.
+
         :param x:
             First coordinate array
         :type: numpy.ndarray
@@ -161,13 +164,21 @@ class SpatialReference(osr.SpatialReference):
         :rtype: (numpy.ndarray, numpy.ndarray)
         """
 
-        if len(y) == 0 and len(x) == 0:
+        xarr = np.array(x)
+        yarr = np.array(y)
+
+        if len(xarr) == 0 and len(yarr) == 0:
             return np.array([x, y])
 
         ct = osr.CoordinateTransformation(from_crs, to_crs)
 
-        points = np.array([x, y, np.zeros_like(x)]).T
-        return np.array(ct.TransformPoints(points)).T[:2]
+        xr = xarr.ravel()
+        yr = yarr.ravel()
+        points = np.stack([xr, yr, np.zeros_like(xr)]).T
+        result = np.array(ct.TransformPoints(points))
+        xp = result[:, 0].reshape(xarr.shape)
+        yp = result[:, 1].reshape(yarr.shape)
+        return xp, yp
 
 
 def _nor_roms(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False):

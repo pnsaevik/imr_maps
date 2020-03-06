@@ -57,6 +57,15 @@ class Test_transform:
         assert nlat.tolist() == []
         assert nlon.tolist() == []
 
+    def test_correct_shape_when_matrix_input(self):
+        lat = np.linspace(5, 6, 12).reshape((4, 3))
+        lon = np.linspace(60, 61, 12).reshape((4, 3))
+        wgs84 = SpatialReference.from_epsg(4326)
+        nlon, nlat = SpatialReference.transform(lon, lat, wgs84, wgs84)
+
+        assert nlat.shape == lat.shape
+        assert nlon.shape == lon.shape
+
     def test_unchanged_when_wgs84_to_etrs89(self):
         lat = np.array([0, 60])
         lon = np.array([0, 5])

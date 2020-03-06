@@ -3,18 +3,52 @@ import numpy as np
 
 
 class GeoDataset(xr.Dataset):
+    """Extends xarray.Dataset by providing methods for handling CF-compliant
+    coordinate system information."""
+
     __slots__ = ()
 
     def create_grid_mapping(self, proj, name='crs_def'):
+        """Create grid_mapping variable
+
+        :param proj: The crs definition to add
+        :type proj: osgeo.osr.SpatialReference
+        :param name: The name of the grid_mapping variable
+        :type name: str
+        :returns: Dataset with added grid_mapping variable
+        :rtype: GeoDataset
+        """
         grid_mapping = grid_mapping_from_proj(name, proj)
         return self.assign({name: grid_mapping})
     
     def create_geocoords(self, coords, grid_mapping=None):
+        """Create geocoordinates
+
+        Create geocoordinates from existing dataset variables, by adding
+        appropriate attributes. Also add grid_mapping attribute to all existing
+        data variables that use these coordinates.
+
+        :param coords: Name of the coordinates
+        :type coords: list[str]
+        :param grid_mapping:
+            Name of the grid mapping. If None, it is inferred from the dataset.
+        :type grid_mapping: str or None
+        :returns: Dataset with added attributes
+        :rtype: GeoDataset
+        """
         if grid_mapping is None:
             grid_mapping = next(v for v in self.get_grid_mappings().values())
         return add_geoattrs_to_coordinates(self, grid_mapping, coords)
 
     def get_grid_mappings(self):
+        """Get grid_mapping variables of this dataset
+
+        Returns a dict of grid_mapping variables contained in this dataset,
+        identified by having a 'grid_mapping_name' attribute.
+
+        :returns: grid_mapping variables contained in this dataset
+        :rtype: dict(str, xarray.DataArray)
+        """
         return {k: v for k, v in self.data_vars.items()
                 if 'grid_mapping_name' in v.attrs}
 

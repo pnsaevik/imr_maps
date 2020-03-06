@@ -25,6 +25,9 @@ EPSG_CODES = dict(
 
 
 class SpatialReference(osr.SpatialReference):
+    """Extends osgeo.osr.SpatialReference by providing convenience methods for
+    creating coordinate systems and use them for coordinate transforms."""
+    
     @staticmethod
     def from_epsg(code):
         """Create SpatialReference from EPSG code

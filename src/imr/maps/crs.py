@@ -196,11 +196,29 @@ def grid_mapping_from_proj(name, proj):
 def add_crs_to_dataset(dset, coords, proj):
 
     dset = assign_crs(dset, crs_def=proj)
-    return create_geocoords(dset, dset['crs_def'], *coords)
+    return add_geoattrs_to_coordinates(dset, dset['crs_def'], *coords)
 
 
-def create_geocoords(dset, grid_mapping, *coords):
-    """Create georeferenced coordinates and assign to dataset"""
+def add_geoattrs_to_coordinates(dset, grid_mapping, *coords):
+    """Convert existing dataset coordinates to geocoordinates
+    
+    Parameters
+    ----------
+    dset: xarray.Dataset
+        The dataset to modify.
+        
+    grid_mapping: xarray.DataArray, xarray.Variable
+        The grid_mapping entry containing crs definition.
+        
+    *coords: str
+        Ordered list of coordinate names. In the case of latitude_longitude
+        grid mapping, the correct order is ['lon', 'lat']. The coordinates must
+        exist in the dataset.
+
+    Returns
+    -------
+    A modified xarray.Dataset with crs info added to the specified coordinates.
+    """
 
     grid_mapping_name = grid_mapping.attrs['grid_mapping_name']
     dset = dset.copy()

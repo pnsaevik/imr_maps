@@ -327,7 +327,7 @@ def _load_crs(dset, gridmapping_or_crs):
     return grid_mapping, crs
 
 
-def change_crs(dset, old_coords, old_crs, new_coords, new_crs):
+def change_crs(dset: xr.Dataset, old_coords, old_crs, new_coords, new_crs):
     dset = dset.copy()
 
     # Load coordinates
@@ -342,12 +342,16 @@ def change_crs(dset, old_coords, old_crs, new_coords, new_crs):
     if len(xdims) == 2:
         dims = xdims
     else:
-        dims = xdims + ydims
+        dims = ydims + xdims
 
     # Transform coordinates
     old_gridmap, old_proj = _load_crs(dset, old_crs)
     new_gridmap, new_proj = _load_crs(dset, new_crs)
     new_x, new_y = crs_transform(old_x, old_y, old_proj, new_proj)
+
+    # Remove old grid mapping and coordinates
+    dset = dset.drop_vars(old_gridmap.name)
+    dset = dset.drop_vars(old_coords)
 
     # Check if new coordinates are one-dimensional
     xdiff = np.max(np.abs(np.diff(new_x, axis=0)))
@@ -356,17 +360,17 @@ def change_crs(dset, old_coords, old_crs, new_coords, new_crs):
         # If one-dimensional, store as one-dimensional variables and
         # change dimension names to match coordinates
         dset = dset.assign_coords({
-            new_coords[0]: xr.Variable(dims[0], new_x[0, :]),
-            new_coords[1]: xr.Variable(dims[1], new_y[:, 0]),
-        })
-        dset = dset.rename_dims(dict(zip(dims, new_coords)))
+            new_coords[0]: xr.Variable(dims[1], new_x[0, :]),
+            new_coords[1]: xr.Variable(dims[0], new_y[:, 0]),
+        })  # type: xr.Dataset
+        dset = dset.rename_dims(dict(zip(reversed(dims), new_coords)))
     else:
         # If two-dimensional, store as auxillary coordinates with the same
         # dimension names as the old coordinates
         dset = dset.assign_coords({
-            new_coords[0]: xr.Variable(reversed(dims), new_x),
-            new_coords[1]: xr.Variable(reversed(dims), new_y),
-        })
+            new_coords[0]: xr.Variable(dims, new_x),
+            new_coords[1]: xr.Variable(dims, new_y),
+        })  # type: xr.Dataset
 
     # Find data vars referring to old coordinates
     old_data_vars = [k for k, v in dset.data_vars.items()

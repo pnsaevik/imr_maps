@@ -72,12 +72,12 @@ class Test_set_crs:
 
 
 class Test_change_crs:
-    def test_unchanged_when_equal_crs(self):
+    def test_unchanged_when_wgs84_to_wgs84(self):
         wgs84 = SpatialReference.from_epsg(4326)
         dset = set_crs(
             dset=xr.Dataset(
                 data_vars=dict(myvar=(('lat', 'lon'), [[1., 2, 3], [4, 5, 6]])),
-                coords=dict(lat=[59., 60], lon=[4., 5, 6]),
+                coords=dict(lon=[4., 5, 6], lat=[59., 60]),
             ),
             crs=wgs84,
             coords=['lon', 'lat'],
@@ -91,7 +91,28 @@ class Test_change_crs:
 
         assert str(dset_new) == str(dset)
 
-    def test_correct_when_change_from_wgs84_to_utm(self):
+    def test_old_dataset_unchanged_when_wgs84_to_utm(self):
+        wgs84 = SpatialReference.from_epsg(4326)
+        utm = SpatialReference.from_epsg(25831)
+        dset = xr.Dataset(
+            data_vars=dict(myvar=(('lat', 'lon'), [[1., 2, 3], [4, 5, 6]])),
+            coords=dict(lat=[59., 60], lon=[4., 5, 6]),
+        )
+        dset_wgs84 = set_crs(dset, wgs84, ['lon', 'lat'], ['myvar'])
+        old_wgs84_str = str(dset_wgs84)
+        old_crs_str = str(dset_wgs84.crs_def)
+
+        dset_utm = change_crs(
+            dset=dset_wgs84, old_coords=['lon', 'lat'], old_crs='crs_def',
+            new_coords=['x', 'y'], new_crs=utm,
+        )
+
+        assert str(dset_wgs84) == old_wgs84_str
+        assert str(dset_wgs84.crs_def) == old_crs_str
+        assert str(dset_utm) != old_wgs84_str
+        assert str(dset_utm.crs_def) != old_crs_str
+
+    def test_correct_when_wgs84_to_utm(self):
         wgs84 = SpatialReference.from_epsg(4326)
         utm = SpatialReference.from_epsg(25831)
         dset = xr.Dataset(
@@ -115,6 +136,28 @@ class Test_change_crs:
         assert dset_utm.crs_def.grid_mapping_name == 'transverse_mercator'
         assert dset_utm.x.standard_name == 'projection_x_coordinate'
         assert dset_utm.myvar.grid_mapping == 'crs_def'
+
+    def test_unchanged_when_wgs84_to_utm_and_back(self):
+        wgs84 = SpatialReference.from_epsg(4326)
+        utm = SpatialReference.from_epsg(25831)
+        dset = xr.Dataset(
+            data_vars=dict(myvar=(('lat', 'lon'), [[1., 2, 3], [4, 5, 6]])),
+            coords=dict(lon=[4., 5, 6], lat=[59., 60]),
+        )
+        dset_wgs84 = set_crs(dset, wgs84, ['lon', 'lat'], ['myvar'])
+
+        dset_utm = change_crs(
+            dset=dset_wgs84, old_coords=['lon', 'lat'], old_crs='crs_def',
+            new_coords=['x', 'y'], new_crs=utm,
+        )
+
+        dset_new = change_crs(
+            dset=dset_utm, old_coords=['x', 'y'], old_crs='crs_def',
+            new_coords=['lon', 'lat'], new_crs=wgs84,
+        )
+
+        assert str(dset_new) == str(dset_wgs84)
+        assert str(dset_new.crs_def) == str(dset_wgs84.crs_def)
 
 
 class Test_from_epsg:

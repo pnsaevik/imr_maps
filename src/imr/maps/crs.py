@@ -1,5 +1,6 @@
 from osgeo import osr
 import numpy as np
+import xarray as xr
 
 
 EPSG_CODES = dict(
@@ -175,13 +176,57 @@ class SpatialReference(osr.SpatialReference):
 
         ct = osr.CoordinateTransformation(from_crs, to_crs)
 
-        xr = xarr.ravel()
-        yr = yarr.ravel()
-        points = np.stack([xr, yr, np.zeros_like(xr)]).T
+        xrv = xarr.ravel()
+        yrv = yarr.ravel()
+        points = np.stack([xrv, yrv, np.zeros_like(xrv)]).T
         result = np.array(ct.TransformPoints(points))
         xp = result[:, 0].reshape(xarr.shape)
         yp = result[:, 1].reshape(yarr.shape)
         return xp, yp
+
+
+def crs_to_gridmapping(crs):
+    """Create grid_mapping variable from projection"""
+    wkt = crs.ExportToWkt()
+    dproj = xr.DataArray(
+        dims=(), data=np.int8(0),
+        attrs=dict(
+            long_name="CRS definition",
+            crs_wkt=wkt,
+            spatial_ref=wkt,
+            semi_major_axis=crs.GetSemiMajor(),
+            inverse_flattening=crs.GetInvFlattening(),
+            projected_crs_name=crs.GetAttrValue('PROJCS'),
+            geographic_crs_name=crs.GetAttrValue('GEOGCS'),
+            horizontal_datum_name=crs.GetAttrValue('DATUM'),
+            reference_ellipsoid_name=crs.GetAttrValue('SPHEROID'),
+            prime_meridian_name=crs.GetAttrValue('PRIMEM'),
+            towgs84=crs.GetTOWGS84(),
+        ),
+    )
+
+    proj_name = crs.GetAttrValue('PROJECTION', 0)
+
+    # If WGS84 or ETRS89
+    if proj_name is None:
+        dproj.attrs['grid_mapping_name'] = 'latitude_longitude'
+
+    # If transverse mercator
+    elif proj_name == "Transverse_Mercator":
+        dproj.attrs['grid_mapping_name'] = 'transverse_mercator'
+        dproj.attrs['scale_factor_at_central_meridian'] = crs.GetProjParm(
+            'scale_factor')
+        dproj.attrs['longitude_of_central_meridian'] = crs.GetProjParm(
+            'central_meridian')
+        dproj.attrs['latitude_of_projection_origin'] = crs.GetProjParm(
+            'latitude_of_origin')
+        dproj.attrs['false_easting'] = crs.GetProjParm('false_easting')
+        dproj.attrs['false_northing'] = crs.GetProjParm('false_northing')
+
+    else:
+        raise ValueError(f'Unknown projection: {proj_name}')
+
+    return dproj
 
 
 def _nor_roms(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False):
@@ -212,3 +257,8 @@ def _nor_roms(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False
         {unit_str}"""
 
     return SpatialReference.from_wkt(wkt)
+
+
+def set_crs(dset: xr.Dataset, crs):
+    dset = dset.assign(crs_def=crs_to_gridmapping(crs))
+    return dset

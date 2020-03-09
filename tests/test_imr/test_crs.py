@@ -1,6 +1,32 @@
-from imr.maps import SpatialReference
+from imr.maps import SpatialReference, set_crs
 from osgeo import osr
 import numpy as np
+import pytest
+import xarray as xr
+
+
+class Test_set_crs:
+    @pytest.fixture(scope='class')
+    def dset(self):
+        return xr.Dataset(
+            data_vars=dict(
+                mydata=xr.Variable(
+                    dims=('band', 'lat', 'lon'),
+                    data=np.arange(2 * 3 * 4).reshape((2, 3, 4)),
+                ),
+            ),
+            coords=dict(
+                lat=[59, 60, 61],
+                lon=[4, 5, 6, 7],
+            ),
+        )
+
+    def test_adds_grid_mapping_when_empty_dataset(self):
+        dset = xr.Dataset()
+        wgs84 = SpatialReference.from_epsg(4326)
+        new_dset = set_crs(dset, wgs84)
+        assert 'crs_def' in new_dset.data_vars
+        assert 'grid_mapping_name' in new_dset.crs_def.attrs
 
 
 class Test_from_epsg:

@@ -259,12 +259,18 @@ def _nor_roms(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False
     return SpatialReference.from_wkt(wkt)
 
 
-def set_crs(dset: xr.Dataset, crs, coords=None):
+def set_crs(dset: xr.Dataset, crs, coords=None, data_vars=None):
     grid_mapping = crs_to_gridmapping(crs)
-    dset = dset.assign(crs_def=grid_mapping)
+    grid_mapping_varname = 'crs_def'
+    dset = dset.assign({grid_mapping_varname: grid_mapping})
 
     if coords is not None:
         dset = _add_geoattrs_to_coords(dset, grid_mapping, coords)
+
+    if data_vars is not None:
+        dset = dset.copy()
+        for v in data_vars:
+            dset.data_vars[v].attrs['grid_mapping'] = grid_mapping_varname
 
     return dset
 

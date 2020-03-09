@@ -34,11 +34,22 @@ class Test_set_crs:
         wgs84 = SpatialReference.from_epsg(4326)
         new_dset = set_crs(dset, wgs84, coords=['lon', 'lat'])
 
+        # Attributes are assigned to coordinates in the return value
         assert new_dset.coords['lon'].attrs['standard_name'] == 'longitude'
         assert new_dset.coords['lon'].attrs['axis'] == 'X'
         assert new_dset.coords['lat'].attrs['standard_name'] == 'latitude'
         assert new_dset.coords['lat'].attrs['axis'] == 'Y'
 
+        # No change in the original dataset
+        assert 'standard_name' not in dset.coords['lon'].attrs
+
+    def test_sets_crs_name_to_data_vars_if_specified(self):
+        dset = xr.Dataset(
+            data_vars=dict(myvar=(('lat', 'lon'), [[1, 2, 3], [4, 5, 6]])))
+        wgs84 = SpatialReference.from_epsg(4326)
+        new_dset = set_crs(dset, wgs84, data_vars=['myvar'])
+
+        assert new_dset.data_vars['myvar'].attrs['grid_mapping'] == 'crs_def'
 
 
 class Test_from_epsg:

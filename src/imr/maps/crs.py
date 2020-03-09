@@ -279,6 +279,10 @@ def set_crs(dset: xr.Dataset, crs, coords=None, data_vars=None):
     return dset
 
 
+def change_crs():
+    pass
+
+
 def _add_geoattrs_to_coords(dset, grid_mapping, coords):
     grid_mapping_name = grid_mapping.attrs['grid_mapping_name']
     dset = dset.copy()

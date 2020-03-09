@@ -1,4 +1,4 @@
-from imr.maps import SpatialReference, set_crs
+from imr.maps import SpatialReference, set_crs, change_crs
 from osgeo import osr
 import numpy as np
 import pytest
@@ -69,6 +69,11 @@ class Test_set_crs:
 
         assert dset.lon.attrs['standard_name'] == 'longitude'
         assert dset.myvar.attrs['grid_mapping'] == 'my_crs_def'
+
+
+class Test_change_crs:
+    def test_runs(self):
+        change_crs()
 
 
 class Test_from_epsg:

@@ -28,6 +28,18 @@ class Test_set_crs:
         assert 'crs_def' in new_dset.data_vars
         assert 'grid_mapping_name' in new_dset.crs_def.attrs
 
+    def test_sets_coordinate_attributes_if_specified(self):
+        dset = xr.Dataset(coords=dict(lat=[59, 60, 61], lon=[4, 5, 6, 7]))
+
+        wgs84 = SpatialReference.from_epsg(4326)
+        new_dset = set_crs(dset, wgs84, coords=['lon', 'lat'])
+
+        assert new_dset.coords['lon'].attrs['standard_name'] == 'longitude'
+        assert new_dset.coords['lon'].attrs['axis'] == 'X'
+        assert new_dset.coords['lat'].attrs['standard_name'] == 'latitude'
+        assert new_dset.coords['lat'].attrs['axis'] == 'Y'
+
+
 
 class Test_from_epsg:
     def test_is_valid_spatial_reference(self):

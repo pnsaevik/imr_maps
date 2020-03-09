@@ -259,6 +259,36 @@ def _nor_roms(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False
     return SpatialReference.from_wkt(wkt)
 
 
-def set_crs(dset: xr.Dataset, crs):
-    dset = dset.assign(crs_def=crs_to_gridmapping(crs))
+def set_crs(dset: xr.Dataset, crs, coords=None):
+    grid_mapping = crs_to_gridmapping(crs)
+    dset = dset.assign(crs_def=grid_mapping)
+
+    if coords is not None:
+        dset = _add_geoattrs_to_coords(dset, grid_mapping, coords)
+
+    return dset
+
+
+def _add_geoattrs_to_coords(dset, grid_mapping, coords):
+    grid_mapping_name = grid_mapping.attrs['grid_mapping_name']
+    dset = dset.copy()
+
+    dset.coords[coords[0]].attrs['axis'] = 'X'
+    dset.coords[coords[1]].attrs['axis'] = 'Y'
+
+    # If WGS84 or ETRS89
+    if grid_mapping_name == 'latitude_longitude':
+        dset.coords[coords[0]].attrs['standard_name'] = 'longitude'
+        dset.coords[coords[1]].attrs['standard_name'] = 'latitude'
+
+    # If rotated pole
+    elif grid_mapping_name == 'rotated_latitude_longitude':
+        dset.coords[coords[0]].attrs['standard_name'] = 'grid_longitude'
+        dset.coords[coords[1]].attrs['standard_name'] = 'grid_latitude'
+
+    # All other
+    else:
+        dset.coords[coords[0]].attrs['standard_name'] = 'projection_x_coordinate'
+        dset.coords[coords[1]].attrs['standard_name'] = 'projection_y_coordinate'
+
     return dset

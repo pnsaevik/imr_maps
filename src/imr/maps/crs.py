@@ -168,21 +168,47 @@ class SpatialReference(osr.SpatialReference):
         :rtype: (numpy.ndarray, numpy.ndarray)
         """
 
-        xarr = np.array(x)
-        yarr = np.array(y)
+        return crs_transform(x, y, from_crs, to_crs)
 
-        if len(xarr) == 0 and len(yarr) == 0:
-            return np.array([x, y])
 
-        ct = osr.CoordinateTransformation(from_crs, to_crs)
+def crs_transform(x, y, from_crs, to_crs):
+    """Transform coordinate values between two coordinate systems
 
-        xrv = xarr.ravel()
-        yrv = yarr.ravel()
-        points = np.stack([xrv, yrv, np.zeros_like(xrv)]).T
-        result = np.array(ct.TransformPoints(points))
-        xp = result[:, 0].reshape(xarr.shape)
-        yp = result[:, 1].reshape(yarr.shape)
-        return xp, yp
+    Transform coordinate values between two coordinate systems. The shape
+    of the input arrays are preserved.
+
+    :param x:
+        First coordinate array
+    :type: numpy.ndarray
+    :param y:
+        Second coordinate array
+    :type: numpy.ndarray
+    :param from_crs:
+        Source coordinates reference frame
+    :type from_crs: osgeo.osr.SpatialReference
+    :param to_crs:
+        Transformed coordinates reference frame
+    :type to_crs: osgeo.osr.SpatialReference
+    :returns:
+        (xp, yp), the transformed coordinates
+    :rtype: (numpy.ndarray, numpy.ndarray)
+    """
+
+    xarr = np.array(x)
+    yarr = np.array(y)
+
+    if len(xarr) == 0 and len(yarr) == 0:
+        return np.array([x, y])
+
+    ct = osr.CoordinateTransformation(from_crs, to_crs)
+
+    xrv = xarr.ravel()
+    yrv = yarr.ravel()
+    points = np.stack([xrv, yrv, np.zeros_like(xrv)]).T
+    result = np.array(ct.TransformPoints(points))
+    xp = result[:, 0].reshape(xarr.shape)
+    yp = result[:, 1].reshape(yarr.shape)
+    return xp, yp
 
 
 def crs_to_gridmapping(crs):
@@ -229,6 +255,17 @@ def crs_to_gridmapping(crs):
     return dproj
 
 
+def crs_from_gridmapping(grid_mapping):
+    """Create projection from grid_mapping variable"""
+    if 'crs_wkt' not in grid_mapping.attrs:
+        raise NotImplementedError('At present, a "crs_wkt" attr is required')
+
+    wkt = grid_mapping.attrs['crs_wkt']
+    sr = osr.SpatialReference()
+    sr.ImportFromWkt(wkt)
+    return sr
+
+
 def _nor_roms(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False):
     if metric_unit:
         unit_str = 'UNIT["metre",1,AUTHORITY["EPSG","9001"]]'
@@ -260,13 +297,8 @@ def _nor_roms(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False
 
 
 def set_crs(dset: xr.Dataset, crs, coords=None, data_vars=None):
-    if isinstance(crs, str):
-        grid_mapping_varname = crs
-        grid_mapping = dset.data_vars[crs]
-    else:
-        grid_mapping = crs_to_gridmapping(crs)
-        grid_mapping_varname = 'crs_def'
-    dset = dset.assign({grid_mapping_varname: grid_mapping})
+    grid_mapping, _ = _load_crs(dset, crs)
+    dset = dset.assign({grid_mapping.name: grid_mapping})
 
     if coords is not None:
         dset = _add_geoattrs_to_coords(dset, grid_mapping, coords)
@@ -274,13 +306,77 @@ def set_crs(dset: xr.Dataset, crs, coords=None, data_vars=None):
     if data_vars is not None:
         dset = dset.copy()
         for v in data_vars:
-            dset.data_vars[v].attrs['grid_mapping'] = grid_mapping_varname
+            dset.data_vars[v].attrs['grid_mapping'] = grid_mapping.name
 
     return dset
 
 
-def change_crs():
-    pass
+def _load_crs(dset, gridmapping_or_crs):
+    if isinstance(gridmapping_or_crs, str):
+        grid_mapping = dset.data_vars[gridmapping_or_crs]
+        crs = crs_from_gridmapping(grid_mapping)
+    elif isinstance(gridmapping_or_crs, xr.DataArray):
+        grid_mapping = gridmapping_or_crs
+        crs = crs_from_gridmapping(grid_mapping)
+    else:
+        grid_mapping_varname = 'crs_def'
+        grid_mapping = crs_to_gridmapping(gridmapping_or_crs)
+        grid_mapping.name = grid_mapping_varname
+        crs = gridmapping_or_crs
+
+    return grid_mapping, crs
+
+
+def change_crs(dset, old_coords, old_crs, new_coords, new_crs):
+    dset = dset.copy()
+
+    # Load coordinates
+    old_x = dset.variables[old_coords[0]].values
+    old_y = dset.variables[old_coords[1]].values
+    if len(old_x.shape) == 1 and len(old_y.shape) == 1:
+        old_x, old_y = np.meshgrid(old_x, old_y)
+
+    # Find old dimensions
+    xdims = dset.variables[old_coords[0]].dims
+    ydims = dset.variables[old_coords[1]].dims
+    if len(xdims) == 2:
+        dims = xdims
+    else:
+        dims = xdims + ydims
+
+    # Transform coordinates
+    old_gridmap, old_proj = _load_crs(dset, old_crs)
+    new_gridmap, new_proj = _load_crs(dset, new_crs)
+    new_x, new_y = crs_transform(old_x, old_y, old_proj, new_proj)
+
+    # Check if new coordinates are one-dimensional
+    xdiff = np.max(np.abs(np.diff(new_x, axis=0)))
+    ydiff = np.max(np.abs(np.diff(new_y, axis=1)))
+    if xdiff < 1e-8 and ydiff < 1e-8:
+        # If one-dimensional, store as one-dimensional variables and
+        # change dimension names to match coordinates
+        dset = dset.assign_coords({
+            new_coords[0]: xr.Variable(dims[0], new_x[0, :]),
+            new_coords[1]: xr.Variable(dims[1], new_y[:, 0]),
+        })
+        dset = dset.rename_dims(dict(zip(dims, new_coords)))
+    else:
+        # If two-dimensional, store as auxillary coordinates with the same
+        # dimension names as the old coordinates
+        dset = dset.assign_coords({
+            new_coords[0]: xr.Variable(dims, new_x),
+            new_coords[1]: xr.Variable(dims, new_y),
+        })
+
+    # Find data vars referring to old coordinates
+    old_data_vars = [k for k, v in dset.data_vars.items()
+                     if 'grid_mapping' in v.attrs]
+
+    # Add grid mapping to new dataset
+    dset = set_crs(dset=dset, crs=new_gridmap, coords=new_coords,
+                   data_vars=old_data_vars)
+
+    return dset
 
 
 def _add_geoattrs_to_coords(dset, grid_mapping, coords):

@@ -72,8 +72,24 @@ class Test_set_crs:
 
 
 class Test_change_crs:
-    def test_runs(self):
-        change_crs()
+    def test_unchanged_when_equal_crs(self):
+        wgs84 = SpatialReference.from_epsg(4326)
+        dset = set_crs(
+            dset=xr.Dataset(
+                data_vars=dict(myvar=(('lat', 'lon'), [[1., 2, 3], [4, 5, 6]])),
+                coords=dict(lat=[59., 60], lon=[4., 5, 6]),
+            ),
+            crs=wgs84,
+            coords=['lon', 'lat'],
+            data_vars=['myvar'],
+        )
+
+        dset_new = change_crs(
+            dset=dset, old_coords=['lon', 'lat'], old_crs='crs_def',
+            new_coords=['lon', 'lat'], new_crs=wgs84,
+        )
+
+        assert str(dset_new) == str(dset)
 
 
 class Test_from_epsg:

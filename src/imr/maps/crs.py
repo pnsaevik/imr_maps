@@ -321,7 +321,7 @@ def change_crs(dset: xr.Dataset, old_coords, old_crs, new_coords, new_crs):
             new_coords[0]: xr.Variable(dims[1], new_x[0, :]),
             new_coords[1]: xr.Variable(dims[0], new_y[:, 0]),
         })  # type: xr.Dataset
-        dset = dset.rename_dims(dict(zip(reversed(dims), new_coords)))
+        dset = dset.swap_dims(dict(zip(reversed(dims), new_coords)))
     else:
         # If two-dimensional, store as auxillary coordinates with the same
         # dimension names as the old coordinates

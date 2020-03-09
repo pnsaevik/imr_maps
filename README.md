@@ -40,36 +40,5 @@ with locations() as dset:
     print(dset)
 ```
 
-The package `imr.maps` provides two classes, `SpatialReference` which
-represents a geospatial reference frame, and `GeoDataset` which represents
-a CF-compliant netCDF dataset with geospatial information.
-
-Sample usage:
-
-```python
-from imr.maps import SpatialReference, GeoDataset
-import xarray as xr
-
-wgs84 = SpatialReference.from_epsg(4326)
-utm33n = SpatialReference.from_epsg(32633)
-x, y = [10000], [6710000]
-lon, lat = SpatialReference.transform(x, y, utm33n, wgs84)
-
-
-dset = GeoDataset(
-    data_vars=dict(
-        mydata=xr.Variable(
-            dims=('y', 'x'), 
-            data=[[1, 2, 3], [4, 5, 6]],
-        ),
-    ),
-    coords=dict(
-        x=[0, 10000, 20000],
-        y=[6700000, 6710000],    
-    ),
-)
-
-dset = dset.create_grid_mapping(utm33n)
-dset = dset.create_geocoords(["x", "y"])
-dset.to_netcdf('out.nc')
-```
+The package `imr.maps` provides methods and classes to work with georeferenced
+netCDF files.

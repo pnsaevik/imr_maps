@@ -43,13 +43,32 @@ class Test_set_crs:
         # No change in the original dataset
         assert 'standard_name' not in dset.coords['lon'].attrs
 
-    def test_sets_crs_name_to_data_vars_if_specified(self):
+    def test_adds_gridmapping_to_data_vars_if_specified(self):
         dset = xr.Dataset(
             data_vars=dict(myvar=(('lat', 'lon'), [[1, 2, 3], [4, 5, 6]])))
         wgs84 = SpatialReference.from_epsg(4326)
         new_dset = set_crs(dset, wgs84, data_vars=['myvar'])
 
         assert new_dset.data_vars['myvar'].attrs['grid_mapping'] == 'crs_def'
+
+    def test_can_use_existing_gridmapping_variable(self):
+        wgs84 = SpatialReference.from_epsg(4326)
+        dset = xr.Dataset(
+            data_vars=dict(myvar=(('lat', 'lon'), [[1, 2, 3], [4, 5, 6]])),
+            coords=dict(lat=[59, 60], lon=[4, 5, 6]),
+        )
+
+        # First set the crs. Don't do anything to coords or data_vars.
+        dset = set_crs(dset, wgs84)
+        assert 'standard_name' not in dset.lon.attrs
+        assert 'grid_mapping' not in dset.myvar.attrs
+
+        # Now rename the crs, and apply to coords and data_vars.
+        dset = dset.rename(crs_def='my_crs_def')
+        dset = set_crs(dset, 'my_crs_def', ['lon', 'lat'], ['myvar'])
+
+        assert dset.lon.attrs['standard_name'] == 'longitude'
+        assert dset.myvar.attrs['grid_mapping'] == 'my_crs_def'
 
 
 class Test_from_epsg:

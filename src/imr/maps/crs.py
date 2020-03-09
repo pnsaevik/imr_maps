@@ -260,8 +260,12 @@ def _nor_roms(xp=3991, yp=2230, dx=800, ylon=70, name='NK800', metric_unit=False
 
 
 def set_crs(dset: xr.Dataset, crs, coords=None, data_vars=None):
-    grid_mapping = crs_to_gridmapping(crs)
-    grid_mapping_varname = 'crs_def'
+    if isinstance(crs, str):
+        grid_mapping_varname = crs
+        grid_mapping = dset.data_vars[crs]
+    else:
+        grid_mapping = crs_to_gridmapping(crs)
+        grid_mapping_varname = 'crs_def'
     dset = dset.assign({grid_mapping_varname: grid_mapping})
 
     if coords is not None:

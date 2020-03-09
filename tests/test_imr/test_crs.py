@@ -91,6 +91,31 @@ class Test_change_crs:
 
         assert str(dset_new) == str(dset)
 
+    def test_correct_when_change_from_wgs84_to_utm(self):
+        wgs84 = SpatialReference.from_epsg(4326)
+        utm = SpatialReference.from_epsg(25831)
+        dset = xr.Dataset(
+            data_vars=dict(myvar=(('lat', 'lon'), [[1., 2, 3], [4, 5, 6]])),
+            coords=dict(lat=[59., 60], lon=[4., 5, 6]),
+        )
+        dset_wgs84 = set_crs(dset, wgs84, ['lon', 'lat'], ['myvar'])
+
+        dset_utm = change_crs(
+            dset=dset_wgs84, old_coords=['lon', 'lat'], old_crs='crs_def',
+            new_coords=['x', 'y'], new_crs=utm,
+        )
+
+        # Correct values
+        x = dset_utm.x.values.astype(int).tolist()
+        y = dset_utm.y.values.astype(int).tolist()
+        assert x == [[557450, 614893, 672319], [555776, 611544, 667294]]
+        assert y == [[6540481, 6541771, 6543920], [6651832, 6653097, 6655205]]
+
+        # Correct attributes
+        assert dset_utm.crs_def.grid_mapping_name == 'transverse_mercator'
+        assert dset_utm.x.standard_name == 'projection_x_coordinate'
+        assert dset_utm.myvar.grid_mapping == 'crs_def'
+
 
 class Test_from_epsg:
     def test_is_valid_spatial_reference(self):

@@ -364,8 +364,8 @@ def change_crs(dset, old_coords, old_crs, new_coords, new_crs):
         # If two-dimensional, store as auxillary coordinates with the same
         # dimension names as the old coordinates
         dset = dset.assign_coords({
-            new_coords[0]: xr.Variable(dims, new_x),
-            new_coords[1]: xr.Variable(dims, new_y),
+            new_coords[0]: xr.Variable(reversed(dims), new_x),
+            new_coords[1]: xr.Variable(reversed(dims), new_y),
         })
 
     # Find data vars referring to old coordinates

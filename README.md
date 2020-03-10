@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.com/pnsaevik/imr_farms.png)](https://travis-ci.com/pnsaevik/imr_farms)
+[![Build Status](https://travis-ci.com/pnsaevik/imr_maps.png)](https://travis-ci.com/pnsaevik/imr_maps)
 
-# imr.farms
-Retrieve map data on Norwegian aquaculture locations
+# imr_maps
+Utility functions for retrieving and handling map data.
 
 ## Dependencies
 
@@ -21,7 +21,7 @@ pip install --global-option=build_ext --global-option="-I/usr/include/gdal" GDAL
 
 After the dependencies are installed, the package is installed using
 
-```pip install imr_farms```
+```pip install imr_maps```
 
 ## Usage
 

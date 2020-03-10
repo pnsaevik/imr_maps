@@ -2,8 +2,8 @@ from setuptools import setup, find_namespace_packages
 
 
 setup(
-    name='imr_farms',
-    version='1.0.0',
+    name='imr_maps',
+    version='0.2.0',
     packages=find_namespace_packages(where='src'),
     package_dir={'': 'src'},
     # package_data={'imr.farms.data': ['*']},
@@ -14,7 +14,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
         'Intended Audience :: Science/Research',

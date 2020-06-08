@@ -6,6 +6,9 @@ setup(
     version='0.2.0',
     packages=find_namespace_packages(where='src'),
     package_dir={'': 'src'},
+    entry_points={
+        'console_scripts': ['farmloc=imr.farms.wfs:farmloc_script'],
+    },
     # package_data={'imr.farms.data': ['*']},
     url='https://github.com/pnsaevik/imr_maps',
     license='MIT',
@@ -35,7 +38,7 @@ setup(
     author_email='a5606@hi.no',
     description='Retrieve public data on Norwegian aquaculture locations',
     install_requires=[
-        'numpy', 'pytest', 'GDAL', 'xarray', 'netCDF4',
+        'numpy', 'pytest', 'GDAL', 'xarray', 'netCDF4', 'PyYAML'
     ],
     python_requires='>=3.6',
 )

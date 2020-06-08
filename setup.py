@@ -7,7 +7,10 @@ setup(
     packages=find_namespace_packages(where='src'),
     package_dir={'': 'src'},
     entry_points={
-        'console_scripts': ['farmloc=imr.farms.wfs:farmloc_script'],
+        'console_scripts': [
+            'farmloc=imr.farms.wfs:farmloc_script',
+            'gyteomr=imr.farms.wfs:gyteomr_script',
+        ],
     },
     # package_data={'imr.farms.data': ['*']},
     url='https://github.com/pnsaevik/imr_maps',

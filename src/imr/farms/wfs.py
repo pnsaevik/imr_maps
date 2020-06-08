@@ -3,6 +3,7 @@ from osgeo import ogr, gdal
 
 servers = {
     'fiskdir': 'https://ogc.fiskeridir.no/wfs.ashx',
+    'imr_fisk': 'http://maps.imr.no/geoserver/fisk/ows',
 }
 
 
@@ -83,6 +84,43 @@ def areas(reload=False):
     return dset.assign_coords(record=loknr)
 
 
+def gyte(species, outfile=None):
+    layers = dict(
+        tobis='fisk:Tobis_gyteomrade',
+        snabeluer='fisk:snabeluer_gyte',
+        vanliguer='fisk:Vanliguer_bw',
+        nvg_sild='fisk:nvg_sild_gyte',
+    )
+
+    layer_name = layers[species]  # Early exception if wrong species
+
+    wfs_ds = get_wfs(servers['imr_fisk'])
+
+    from osgeo import ogr
+    memdriver = ogr.GetDriverByName('MEMORY')
+    ds = memdriver.CreateDataSource(species)
+    layer = ds.CopyLayer(wfs_ds.GetLayerByName(layer_name), 'gyte')
+
+    # Filter out features
+    for fid in range(1, layer.GetFeatureCount() + 1):
+        feature = layer.GetFeature(fid)
+        wms_code = next(
+            feature.GetField(i)
+            for i in range(feature.GetFieldCount())
+            if feature.GetFieldDefnRef(i).GetName() == 'wms_code'
+        )
+        if wms_code != 10:
+            layer.DeleteFeature(fid)
+
+    if outfile:
+        jsondriver = ogr.GetDriverByName('GeoJSON')
+        out = jsondriver.CreateDataSource(outfile)
+        out.CopyLayer(layer, 'gyte')
+        del out
+
+    return ds
+
+
 def farmloc_script():
     import sys
 
@@ -96,6 +134,9 @@ def farmloc_script():
 
     if len(args) != 2:
         print("""
+FARMLOC
+   Find location (and more) for the specified farm
+        
 Usage:
 
 farmloc [--reload] loknr
@@ -128,3 +169,35 @@ farmloc [--reload] loknr
 
     import yaml
     print(yaml.dump(d, allow_unicode=True))
+
+
+def gyteomr_script():
+    import sys
+    args = sys.argv
+
+    if len(args) != 3:
+        print("""
+GYTEOMR
+   Download spawning area to geojson file
+
+Usage:
+
+gyteomr species out.geojson
+
+Valid species include:
+- tobis
+- snabeluer
+- vanliguer
+- nvg_sild
+
+""")
+        return
+
+    try:
+        gyte(args[1], args[2])
+    except KeyError:
+        print(f"Unknown species: {args[1]}")
+
+
+if __name__ == '__main__':
+    pass

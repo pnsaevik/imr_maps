@@ -65,3 +65,10 @@ class Test_gyte:
         layer_name = 'fisk:hyse_nea_bw'
         ds = wfs.gyte(layer_name)
         assert ds.GetLayerCount() > 0
+
+
+class Test_import:
+    def test_import(self):
+        import cftime
+        import netCDF4
+        import xarray

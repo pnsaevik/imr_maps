@@ -41,7 +41,7 @@ setup(
     author_email='a5606@hi.no',
     description='Retrieve public data on Norwegian aquaculture locations',
     install_requires=[
-        'numpy', 'pytest', 'GDAL', 'xarray', 'netCDF4', 'PyYAML'
+        'numpy', 'pytest', 'GDAL', 'xarray', 'netCDF4', 'PyYAML', 'cftime'
     ],
     python_requires='>=3.6',
 )

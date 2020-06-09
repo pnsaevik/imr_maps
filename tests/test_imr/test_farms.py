@@ -58,3 +58,10 @@ class Test_areas:
             '-38690.019275 6695668.944893,-38902.007508 6695649.481201))')
         assert a.transverse_mercator.spatial_ref.startswith(
             'PROJCS["WGS 84 / UTM zone 33N"')
+
+
+class Test_gyte:
+    def test_returns_nonempty_dataset_when_default_options(self):
+        layer_name = 'fisk:hyse_nea_bw'
+        ds = wfs.gyte(layer_name)
+        assert ds.GetLayerCount() > 0

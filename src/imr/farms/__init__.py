@@ -1,1 +1,1 @@
-from .wfs import locations, areas
+from imr.maps.wfs import locations, areas

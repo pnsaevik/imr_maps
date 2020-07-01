@@ -1,4 +1,4 @@
-from imr.farms import wfs
+from imr.maps import wfs
 import pytest
 
 

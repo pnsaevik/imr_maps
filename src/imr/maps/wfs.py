@@ -1,6 +1,6 @@
 servers = {
     'fiskdir': 'https://ogc.fiskeridir.no/wfs.ashx',
-    'imr_fisk': 'http://maps.imr.no/geoserver/fisk/ows',
+    'imr_fisk': 'https://maps.imr.no/geoserver/fisk/ows',
 }
 
 
@@ -49,14 +49,33 @@ def download_wfs_layer(layer, url, outfile):
     subprocess.run(cmd)
 
 
-def resource(layer, server, recompute=False):
+def resource(layer, server, recompute=False, expires=None):
     from pathlib import Path
 
-    outdir = Path(writable_location()).joinpath(server)
-    outdir.mkdir(parents=True, exist_ok=True)
-    outfile = outdir.joinpath(layer + '.nc')
+    def get_key(*strs):
+        from hashlib import sha256
+        hasher = sha256()
+        hasher.update("".join(strs).encode('utf-8'))
+        return hasher.digest().hex()
 
-    if recompute or not outfile.exists():
+    key = get_key(server, layer)
+    outfile = Path(writable_location()).joinpath(key)
+
+    if recompute:
+        do_download = True
+    else:
+        if not outfile.exists():
+            do_download = True
+        else:
+            if expires is None:
+                do_download = False
+            else:
+                import os
+                import time
+                elapsed = time.time() - os.path.getmtime(outfile)
+                do_download = (elapsed > expires)
+
+    if do_download:
         url = servers[server]
         download_wfs_layer(layer, url, outfile)
 

@@ -1,38 +1,11 @@
-from imr.maps import wfs
 import pytest
-
-
-@pytest.fixture(scope='module')
-def fiskdir_wfs():
-    return wfs.get_wfs(wfs.servers['fiskdir'])
-
-
-class Test_get_layer:
-    def test_returns_layer_name_if_title_match(self, fiskdir_wfs):
-        title = 'Akvakultur - lokaliteter'
-        layer = wfs.get_layer(title, fiskdir_wfs)
-        assert layer == 'layer_262'
-
-    def test_returns_none_if_no_match(self, fiskdir_wfs):
-        title = 'No title'
-        layer = wfs.get_layer(title, fiskdir_wfs)
-        assert layer is None
-
-
-def test_writable_location_returns_string():
-    assert isinstance(wfs.writable_location(), str)
-
-
-def test_resource_returns_existing_file():
-    import os
-    fname = wfs.resource('layer_262', 'fiskdir', recompute=False)
-    assert os.path.isfile(fname)
+from imr.maps import farms
 
 
 class Test_locations:
     @pytest.fixture(scope='class')
     def locations(self):
-        with wfs.locations() as dset:
+        with farms.locations() as dset:
             yield dset
 
     def test_correct_name_and_location(self, locations):
@@ -45,7 +18,7 @@ class Test_locations:
 class Test_areas:
     @pytest.fixture(scope='class')
     def areas(self):
-        with wfs.areas() as dset:
+        with farms.areas() as dset:
             yield dset
 
     def test_correct_name_and_location(self, areas):
@@ -58,10 +31,3 @@ class Test_areas:
             '-38690.019275 6695668.944893,-38902.007508 6695649.481201))')
         assert a.transverse_mercator.spatial_ref.startswith(
             'PROJCS["WGS 84 / UTM zone 33N"')
-
-
-class Test_gyte:
-    def test_returns_nonempty_dataset_when_default_options(self):
-        layer_name = 'fisk:hyse_nea_bw'
-        ds = wfs.gyte(layer_name)
-        assert ds.GetLayerCount() > 0

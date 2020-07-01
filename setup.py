@@ -3,13 +3,13 @@ from setuptools import setup, find_namespace_packages
 
 setup(
     name='imr_maps',
-    version='0.2.0',
+    version='0.3.0',
     packages=find_namespace_packages(where='src'),
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'farmloc=imr.farms.wfs:farmloc_script',
-            'gyteomr=imr.farms.wfs:gyteomr_script',
+            'farmloc=imr.maps.farms:farmloc_script',
+            'gyteomr=imr.maps.gyte:gyteomr_script',
         ],
     },
     # package_data={'imr.farms.data': ['*']},

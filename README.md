@@ -25,7 +25,7 @@ After the dependencies are installed, the package is installed using
 
 ## Usage
 
-The package `imr.farms` provides two functions, `locations()` and `areas()`,
+The package `imr.maps.farms` provides two functions, `locations()` and `areas()`,
 supplied with an optional `reload` parameter. Both return an `xarray` dataset,
 directly downloaded from https://ogc.fiskeridir.no/wfs.ashx . The tables are
 cached locally (in `.local/share`) as georeferenced netCDF files, and
@@ -34,11 +34,14 @@ re-downloaded only when the `reload` parameter is set to `True`.
 Sample usage:
 
 ```python
-from imr.farms import locations
+from imr.maps.farms import locations
 
 with locations() as dset:
     print(dset)
 ```
 
-The package `imr.maps` provides methods and classes to work with georeferenced
-netCDF files.
+The package `imr.maps.crs` provides methods and classes to work with
+georeferenced netCDF files.
+
+The package `imr.maps.spawn` provides methods to get fish spawning areas from
+a central WFS server.

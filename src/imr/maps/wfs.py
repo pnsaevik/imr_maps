@@ -38,7 +38,7 @@ def writable_location():
     import os
     writable_dir_std = os.path.join(os.path.expanduser('~'), '.local', 'share')
     writable_dir = os.environ.get("XDG_DATA_HOME", writable_dir_std)
-    return os.path.join(writable_dir, 'imr_farms')
+    return os.path.join(writable_dir, 'imr_maps')
 
 
 def download_wfs_layer(layer, url, outfile):

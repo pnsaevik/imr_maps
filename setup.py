@@ -9,7 +9,7 @@ setup(
     entry_points={
         'console_scripts': [
             'farmloc=imr.maps.farms:farmloc_script',
-            'gyteomr=imr.maps.gyte:gyteomr_script',
+            'gyteomr=imr.maps.spawn:gyteomr_script',
         ],
     },
     # package_data={'imr.farms.data': ['*']},

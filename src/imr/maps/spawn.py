@@ -1,7 +1,7 @@
 from .wfs import get_wfs
 
 
-def gyte(layer_name, outfile=None, wms_codes=(10, )):
+def area(layer_name, outfile=None, wms_codes=(10,)):
     wfs_server = 'https://maps.imr.no/geoserver/fisk/ows'
     wfs_ds = get_wfs(wfs_server)
     wfs_layer = wfs_ds.GetLayerByName(layer_name)
@@ -98,7 +98,7 @@ def gyteomr_script():
         layer = layers[species]
 
     try:
-        gyte(layer_name=layer, outfile=args[2], wms_codes=codes)
+        area(layer_name=layer, outfile=args[2], wms_codes=codes)
     except ValueError:
         print(f"Unknown species: {args[1]}\n")
         print_valid_species()

@@ -40,6 +40,36 @@ def crs_from_wkt(wkt):
     return proj
 
 
+def crs_from_epsg(epsg):
+    """Create SpatialReference from EPSG code
+
+    :param epsg:
+        EPSG code representing of the spatial reference frame
+    :type epsg: int
+    :returns:
+        SpatialReference object
+    :rtype: SpatialReference
+    """
+    proj = SpatialReference()
+    proj.ImportFromEPSG(epsg)
+    return proj
+
+
+def crs_from_proj4str(proj4str):
+    """Create SpatialReference from PROJ4 string
+
+    :param proj4str:
+        EPSG code representing of the spatial reference frame
+    :type proj4str: str
+    :returns:
+        SpatialReference object
+    :rtype: SpatialReference
+    """
+    proj = SpatialReference()
+    proj.ImportFromProj4(proj4str)
+    return proj
+
+
 def crs_local(lon, lat):
     """Create local metric coordinate system based on ETRS89 and transverse
     mercator.

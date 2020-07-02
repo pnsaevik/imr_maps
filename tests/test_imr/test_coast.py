@@ -8,8 +8,8 @@ class Test_coastlines:
         c = coast.coastlines(latlim, lonlim)
         assert c.dims['patch_num'] > 0
         assert c.dims['node_num'] > 0
-        assert len(c.lat)
-        assert len(c.lon)
+        assert len(c.latitude)
+        assert len(c.longitude)
         assert len(c.patchsize)
 
     def test_merges_patches(self):
@@ -24,8 +24,8 @@ class Test_coastlines:
         c = coast.coastlines(latlim, lonlim)
         assert c.dims['patch_num'] == 0
         assert c.dims['node_num'] == 0
-        assert c.lat.values.tolist() == []
-        assert c.lon.values.tolist() == []
+        assert c.latitude.values.tolist() == []
+        assert c.longitude.values.tolist() == []
 
     def test_returns_nonempty_xarray_when_gshhs(self):
         latlim = [60, 60.01]
@@ -33,6 +33,6 @@ class Test_coastlines:
         c = coast.coastlines(latlim, lonlim, source='gshhs')
         assert c.dims['patch_num'] > 0
         assert c.dims['node_num'] > 0
-        assert len(c.lat)
-        assert len(c.lon)
+        assert len(c.latitude)
+        assert len(c.longitude)
         assert len(c.patchsize)

@@ -139,20 +139,20 @@ def merged_areas(shapefolder):
     # Create xarray with metadata
     import xarray as xr
     return xr.Dataset({
-        'lat': xr.DataArray(
+        'latitude': xr.DataArray(
             coords_concat[:, 1],
             dims='node_num',
-            name='lat',
+            name='latitude',
             attrs=dict(
                 standard_name='latitude',
                 units='degrees_north',
             ),
         ),
 
-        'lon': xr.DataArray(
+        'longitude': xr.DataArray(
             coords_concat[:, 0],
             dims='node_num',
-            name='lon',
+            name='longitude',
             attrs=dict(
                 standard_name='longitude',
                 units='degrees_east',
@@ -164,13 +164,23 @@ def merged_areas(shapefolder):
             dims='patch_num',
             name='patchsize',
             attrs=dict(
-
+                sample_dimension='node_num',
             ),
         ),
     })
 
 
 def coastlines(latlim, lonlim, source='kartverket'):
-    data = cached_resource(source)
-    with clip_layer(data, latlim, lonlim) as clip_data:
-        return merged_areas(clip_data)
+    """
+    Retrieve a rectangular lat/lon section of coastlines.
+
+    :param latlim: A two-element list of latitude limits
+    :param lonlim: A two-element list of longitude limits
+    :param source: Either 'kartverket' (high-resolution) or 'gshhs' (low-resolution)
+    :return: An xarray dataset with variables 'latitude', 'longitude',
+    'patchsize', where 'latitude', 'longitude' are the land patch coordinates
+    and 'patchsize' is the number of coordinates per land patch.
+    """
+    data = cached_resource(source)  # Download data
+    with clip_layer(data, latlim, lonlim) as clip_data:  # Clip data to area
+        return merged_areas(clip_data)  # Merge disjoint land areas

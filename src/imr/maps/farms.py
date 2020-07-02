@@ -1,15 +1,15 @@
-def locations(reload=False):
+def locations(reload=False, expires=None):
     from imr.maps.wfs import resource
     import xarray as xr
-    fname = resource('layer_262', 'fiskdir', reload)
+    fname = resource('layer_262', 'fiskdir', reload, expires)
     dset = xr.open_dataset(fname)
     return dset.assign_coords(record=dset.loknr.values)
 
 
-def areas(reload=False):
+def areas(reload=False, expires=None):
     from imr.maps.wfs import resource
     import xarray as xr
-    fname = resource('layer_203', 'fiskdir', reload)
+    fname = resource('layer_203', 'fiskdir', reload, expires)
     dset = xr.open_dataset(fname)
     loknr = [int(n.decode('utf8').split(' ')[0]) for n in dset.lokalitet.values]
     dset = dset.assign(loknr=xr.Variable('record', loknr))

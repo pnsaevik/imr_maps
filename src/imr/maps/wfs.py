@@ -1,6 +1,6 @@
 servers = {
     'fiskdir': 'https://ogc.fiskeridir.no/wfs.ashx',
-    'imr_fisk': 'https://maps.imr.no/geoserver/fisk/ows',
+    'imr_fisk': 'http://maps.imr.no:80/geoserver/fisk/ows',
 }
 
 
@@ -59,7 +59,9 @@ def resource(layer, server, recompute=False, expires=None):
         return hasher.digest().hex()
 
     key = get_key(server, layer)
-    outfile = Path(writable_location()).joinpath(key)
+    cachedir = Path(writable_location())
+    cachedir.mkdir(parents=True, exist_ok=True)
+    outfile = cachedir.joinpath(key)
 
     if recompute:
         do_download = True

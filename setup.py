@@ -3,7 +3,7 @@ from setuptools import setup, find_namespace_packages
 
 setup(
     name='imr_maps',
-    version='0.3.0',
+    version='0.3.1',
     packages=find_namespace_packages(where='src'),
     package_dir={'': 'src'},
     entry_points={

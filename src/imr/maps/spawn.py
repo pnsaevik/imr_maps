@@ -1,6 +1,6 @@
 def area(layer_name, outfile=None, wms_codes=(10,)):
     from .wfs import get_wfs
-    wfs_server = 'https://maps.imr.no/geoserver/fisk/ows'
+    wfs_server = 'http://maps.imr.no:80/geoserver/fisk/ows'
     wfs_ds = get_wfs(wfs_server)
     wfs_layer = wfs_ds.GetLayerByName(layer_name)
 

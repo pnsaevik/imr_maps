@@ -2,19 +2,25 @@ from setuptools import setup, find_namespace_packages
 
 
 setup(
-    name='imr_farms',
-    version='1.0.0',
+    name='imr_maps',
+    version='0.3.0',
     packages=find_namespace_packages(where='src'),
     package_dir={'': 'src'},
+    entry_points={
+        'console_scripts': [
+            'farmloc=imr.maps.scripts:farmloc',
+            'gyteomr=imr.maps.scripts:gyteomr',
+        ],
+    },
     # package_data={'imr.farms.data': ['*']},
-    url='https://travis-ci.com/pnsaevik/imr_farms',
+    url='https://github.com/pnsaevik/imr_maps',
     license='MIT',
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
         'Intended Audience :: Science/Research',
@@ -35,7 +41,8 @@ setup(
     author_email='a5606@hi.no',
     description='Retrieve public data on Norwegian aquaculture locations',
     install_requires=[
-        'numpy', 'pytest', 'GDAL', 'xarray', 'netCDF4',
+        'numpy>=1.16', 'pytest', 'GDAL', 'xarray', 'netCDF4', 'PyYAML',
+        'shapely'
     ],
     python_requires='>=3.6',
 )

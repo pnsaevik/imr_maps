@@ -1,12 +1,11 @@
-from osgeo import ogr, gdal
-
-
 servers = {
     'fiskdir': 'https://ogc.fiskeridir.no/wfs.ashx',
+    'imr_fisk': 'https://maps.imr.no/geoserver/fisk/ows',
 }
 
 
 def get_wfs(url):
+    from osgeo import ogr, gdal
     # Speeds up querying WFS capabilities for services with alot of layers
     gdal.SetConfigOption('OGR_WFS_LOAD_MULTIPLE_LAYER_DEFN', 'NO')
 
@@ -39,7 +38,7 @@ def writable_location():
     import os
     writable_dir_std = os.path.join(os.path.expanduser('~'), '.local', 'share')
     writable_dir = os.environ.get("XDG_DATA_HOME", writable_dir_std)
-    return os.path.join(writable_dir, 'imr_farms')
+    return os.path.join(writable_dir, 'imr_maps')
 
 
 def download_wfs_layer(layer, url, outfile):
@@ -50,14 +49,33 @@ def download_wfs_layer(layer, url, outfile):
     subprocess.run(cmd)
 
 
-def resource(layer, server, recompute=False):
+def resource(layer, server, recompute=False, expires=None):
     from pathlib import Path
 
-    outdir = Path(writable_location()).joinpath(server)
-    outdir.mkdir(parents=True, exist_ok=True)
-    outfile = outdir.joinpath(layer + '.nc')
+    def get_key(*strs):
+        from hashlib import sha256
+        hasher = sha256()
+        hasher.update("".join(strs).encode('utf-8'))
+        return hasher.digest().hex()
 
-    if recompute or not outfile.exists():
+    key = get_key(server, layer)
+    outfile = Path(writable_location()).joinpath(key)
+
+    if recompute:
+        do_download = True
+    else:
+        if not outfile.exists():
+            do_download = True
+        else:
+            if expires is None:
+                do_download = False
+            else:
+                import os
+                import time
+                elapsed = time.time() - os.path.getmtime(outfile)
+                do_download = (elapsed > expires)
+
+    if do_download:
         url = servers[server]
         download_wfs_layer(layer, url, outfile)
 
@@ -65,19 +83,3 @@ def resource(layer, server, recompute=False):
         raise IOError(f'Unable to download resource {layer} from {server}')
 
     return outfile
-
-
-def locations(recompute=False):
-    import xarray as xr
-    fname = resource('layer_262', 'fiskdir', recompute)
-    dset = xr.open_dataset(fname)
-    return dset.assign_coords(record=dset.loknr.values)
-
-
-def areas(recompute=False):
-    import xarray as xr
-    fname = resource('layer_203', 'fiskdir', recompute)
-    dset = xr.open_dataset(fname)
-    loknr = [int(n.decode('utf8').split(' ')[0]) for n in dset.lokalitet.values]
-    dset = dset.assign(loknr=xr.Variable('record', loknr))
-    return dset.assign_coords(record=loknr)

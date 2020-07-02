@@ -8,8 +8,8 @@ setup(
     package_dir={'': 'src'},
     entry_points={
         'console_scripts': [
-            'farmloc=imr.scripts:farmloc',
-            'gyteomr=imr.scripts:gyteomr',
+            'farmloc=imr.maps.scripts:farmloc',
+            'gyteomr=imr.maps.scripts:gyteomr',
         ],
     },
     # package_data={'imr.farms.data': ['*']},

@@ -1,6 +1,6 @@
 servers = {
     'fiskdir': 'https://ogc.fiskeridir.no/wfs.ashx',
-    'imr_fisk': 'https://maps.imr.no/geoserver/fisk/ows',
+    'imr_fisk': 'http://maps.imr.no:80/geoserver/fisk/ows',
 }
 
 

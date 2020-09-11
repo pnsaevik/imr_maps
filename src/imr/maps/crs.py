@@ -235,6 +235,18 @@ def crs_to_gridmapping(crs):
         dproj.attrs['false_easting'] = crs.GetProjParm('false_easting')
         dproj.attrs['false_northing'] = crs.GetProjParm('false_northing')
 
+    # If polar stereographic
+    elif proj_name == 'Polar_Stereographic':
+        dproj.attrs['grid_mapping_name'] = 'polar_stereographic'
+        dproj.attrs['scale_factor_at_projection_origin'] = crs.GetProjParm(
+            'scale_factor')
+        dproj.attrs['straight_vertical_longitude_from_pole'] = crs.GetProjParm(
+            'central_meridian')
+        dproj.attrs['latitude_of_projection_origin'] = crs.GetProjParm(
+            'latitude_of_origin')
+        dproj.attrs['false_easting'] = crs.GetProjParm('false_easting')
+        dproj.attrs['false_northing'] = crs.GetProjParm('false_northing')
+
     else:
         raise ValueError(f'Unknown projection: {proj_name}')
 

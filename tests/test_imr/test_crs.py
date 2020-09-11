@@ -311,3 +311,45 @@ class Test_transform:
         xm, ym = crs.crs_transform(x, y, nf160_A01m, nf160_A01)
         assert np.all(np.isclose(xm, [0, 1, 2], atol=1e-5))
         assert np.all(np.isclose(ym, [0, 0, 1], atol=1e-5))
+
+
+class Test_crs_to_gridmapping:
+    def test_returns_correct_attributes_when_wgs84(self):
+        gridmapping = crs.crs_to_gridmapping(wgs84)
+        assert tuple(gridmapping.attrs) == (
+            'long_name',
+            'crs_wkt',
+            'spatial_ref',
+            'semi_major_axis',
+            'inverse_flattening',
+            'projected_crs_name',
+            'geographic_crs_name',
+            'horizontal_datum_name',
+            'reference_ellipsoid_name',
+            'prime_meridian_name',
+            'towgs84',
+            'grid_mapping_name',
+        )
+
+    def test_returns_correct_attributes_when_nk800(self):
+        my_crs = crs.crs_nk800()
+        gridmapping = crs.crs_to_gridmapping(my_crs)
+        assert tuple(gridmapping.attrs) == (
+            'long_name',
+            'crs_wkt',
+            'spatial_ref',
+            'semi_major_axis',
+            'inverse_flattening',
+            'projected_crs_name',
+            'geographic_crs_name',
+            'horizontal_datum_name',
+            'reference_ellipsoid_name',
+            'prime_meridian_name',
+            'towgs84',
+            'grid_mapping_name',
+            'scale_factor_at_projection_origin',
+            'straight_vertical_longitude_from_pole',
+            'latitude_of_projection_origin',
+            'false_easting',
+            'false_northing'
+        )

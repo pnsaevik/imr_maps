@@ -332,7 +332,7 @@ class Test_crs_to_gridmapping:
         )
 
     def test_returns_correct_attributes_when_nk800(self):
-        my_crs = crs.crs_nk800()
+        my_crs = crs.crs_nk800(True)
         gridmapping = crs.crs_to_gridmapping(my_crs)
         assert tuple(gridmapping.attrs) == (
             'long_name',
@@ -347,9 +347,10 @@ class Test_crs_to_gridmapping:
             'prime_meridian_name',
             'towgs84',
             'grid_mapping_name',
-            'scale_factor_at_projection_origin',
+            'standard_parallel',
             'straight_vertical_longitude_from_pole',
             'latitude_of_projection_origin',
             'false_easting',
-            'false_northing'
+            'false_northing',
+            'longitude_of_prime_meridian',
         )

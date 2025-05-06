@@ -6,3 +6,6 @@
 
 # Compiled files
 *.pyc
+
+# Others
+build/

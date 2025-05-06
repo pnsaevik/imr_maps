@@ -1,11 +1,12 @@
 servers = {
-    'fiskdir': 'https://ogc.fiskeridir.no/wfs.ashx',
-    'imr_fisk': 'http://maps.imr.no:80/geoserver/fisk/ows',
+    'fiskdir': 'https://gis.fiskeridir.no/server/services/FiskeridirWFS/MapServer/WFSServer',
+    'imr_fisk': 'https://kart.hi.no/data/ows',
 }
 
 
 def get_wfs(url):
     from osgeo import ogr, gdal
+    gdal.UseExceptions()
     # Speeds up querying WFS capabilities for services with alot of layers
     gdal.SetConfigOption('OGR_WFS_LOAD_MULTIPLE_LAYER_DEFN', 'NO')
 
